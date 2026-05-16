@@ -236,6 +236,14 @@
       color: #aaa;
       font-size: 14px;
     }
+    .schedule-link {
+        margin-top: 4px;
+    }
+    .schedule-link a {
+        font-size: 12px;
+        color: #4CAF50;
+        text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -405,6 +413,7 @@
           <div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>
           <div class="schedule-title">${s.title}</div>
           ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
+          ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
         `;
         list.appendChild(item);
       });
