@@ -20,14 +20,8 @@
       text-align: center;
       margin-bottom: 12px;
     }
-    .top-header h1 {
-      font-size: 18px;
-      color: #333;
-    }
-    .top-header p {
-      font-size: 12px;
-      color: #888;
-    }
+    .top-header h1 { font-size: 18px; color: #333; }
+    .top-header p { font-size: 12px; color: #888; }
     .top-buttons {
       display: flex;
       flex-direction: column;
@@ -49,6 +43,7 @@
     .top-btn:active { opacity: 0.7; }
     .btn-album { background: #FFE0B2; color: #E65100; }
     .btn-schedule { background: #BBDEFB; color: #1565C0; }
+    .btn-view { background: #E8F5E9; color: #2E7D32; }
     .top-btn .btn-icon { font-size: 24px; }
 
     /* 入力画面 */
@@ -79,7 +74,6 @@
       font-family: inherit;
     }
     textarea:focus { outline: none; border-color: #4CAF50; }
-
     .file-btn {
       display: inline-block;
       padding: 8px 14px;
@@ -91,7 +85,6 @@
       color: #555;
     }
     input[type="file"] { display: none; }
-
     .file-list {
       margin-top: 8px;
       display: flex;
@@ -125,6 +118,7 @@
       flex-shrink: 0;
     }
 
+    /* ボタン */
     .btn-primary {
       width: 100%;
       padding: 14px;
@@ -138,8 +132,6 @@
       margin-top: 8px;
     }
     .btn-primary:active { opacity: 0.8; }
-    .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
-
     .back-link {
       text-align: center;
       margin-top: 10px;
@@ -186,6 +178,64 @@
       color: #4CAF50;
       margin-bottom: 20px;
     }
+
+    /* 予定一覧画面 */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+      color: #666;
+    }
+    .tab-btn.active {
+      background: #4CAF50;
+      color: white;
+      border-color: #4CAF50;
+      font-weight: bold;
+    }
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .schedule-item {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .schedule-date {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+    .schedule-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+    .schedule-content {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .schedule-empty {
+      text-align: center;
+      padding: 24px;
+      color: #aaa;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -204,6 +254,10 @@
     <button class="top-btn btn-schedule" onclick="selectKind('schedule')">
       <span class="btn-icon">📋</span>
       予定・プリントを送る
+    </button>
+    <button class="top-btn btn-view" onclick="showSchedule('week')">
+      <span class="btn-icon">📅</span>
+      予定を確認する
     </button>
   </div>
 </div>
@@ -247,6 +301,20 @@
     <div class="count" id="complete-count"></div>
     <button class="btn-primary" onclick="showScreen('top')">続けて送る</button>
   </div>
+</div>
+
+<!-- 予定一覧画面 -->
+<div id="screen-schedule" class="screen">
+  <div class="screen-title">📅 予定を確認する</div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-week" onclick="showSchedule('week')">今週</button>
+    <button class="tab-btn" id="tab-month" onclick="showSchedule('month')">今月</button>
+    <button class="tab-btn" id="tab-all" onclick="showSchedule('all')">すべて</button>
+  </div>
+  <div class="schedule-list" id="schedule-list">
+    <div class="schedule-empty">読み込み中...</div>
+  </div>
+  <p class="back-link" onclick="showScreen('top')">← 戻る</p>
 </div>
 
 <script>
@@ -295,6 +363,56 @@
       document.getElementById('input-title-label').textContent = '予定・プリントを送る';
     }
     showScreen('input');
+  }
+
+  // 予定一覧を表示
+  async function showSchedule(period) {
+    // タブの切り替え
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('tab-' + period).classList.add('active');
+
+    showScreen('schedule');
+    document.getElementById('schedule-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'getSchedule',
+          period: period
+        })
+      });
+      const data = await res.json();
+
+      if (!data.success) throw new Error(data.error);
+
+      const list = document.getElementById('schedule-list');
+
+      if (data.schedules.length === 0) {
+        list.innerHTML = '<div class="schedule-empty">予定はありません</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.schedules.forEach(s => {
+        const date = new Date(s.scheduledDate);
+        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+        const dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
+
+        const item = document.createElement('div');
+        item.className = 'schedule-item';
+        item.innerHTML = `
+          <div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>
+          <div class="schedule-title">${s.title}</div>
+          ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
+        `;
+        list.appendChild(item);
+      });
+
+    } catch (err) {
+      document.getElementById('schedule-list').innerHTML =
+        '<div class="schedule-empty">読み込みに失敗しました</div>';
+    }
   }
 
   function onFileSelected(input) {
