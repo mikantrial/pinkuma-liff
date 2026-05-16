@@ -315,8 +315,8 @@
 <div id="screen-schedule" class="screen">
   <div class="screen-title">📅 予定を確認する</div>
   <div class="tab-bar">
-    <button class="tab-btn active" id="tab-week" onclick="showSchedule('week')">今週</button>
-    <button class="tab-btn" id="tab-month" onclick="showSchedule('month')">今月</button>
+    <button class="tab-btn active" id="tab-week" onclick="showSchedule('week')">1週間以内</button>
+    <button class="tab-btn" id="tab-month" onclick="showSchedule('month')">1ヶ月以内</button>
     <button class="tab-btn" id="tab-all" onclick="showSchedule('all')">すべて</button>
     <button class="tab-btn" id="tab-memo" onclick="showSchedule('memo')">メモ</button>
   </div>
@@ -404,14 +404,19 @@
 
       list.innerHTML = '';
       data.schedules.forEach(s => {
-        const date = new Date(s.scheduledDate);
-        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-        const dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
-
+        let dateStr = '';
+        if (s.scheduledDate) {
+          const date = new Date(s.scheduledDate);
+          if (!isNaN(date.getTime())) {
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
+          }
+        }
+        
         const item = document.createElement('div');
         item.className = 'schedule-item';
         item.innerHTML = `
-          <div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>
+          ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
           <div class="schedule-title">${s.title}</div>
           ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
           ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
