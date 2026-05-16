@@ -12,83 +12,91 @@
       background: #f5f5f5;
       min-height: 100vh;
     }
-    .screen { display: none; padding: 24px 16px; }
+    .screen { display: none; padding: 12px 16px; }
     .screen.active { display: block; }
-    h1 {
+
+    /* TOP画面 */
+    .top-header {
       text-align: center;
-      font-size: 20px;
-      color: #333;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
-    .subtitle {
-      text-align: center;
-      font-size: 13px;
+    .top-header h1 {
+      font-size: 18px;
+      color: #333;
+    }
+    .top-header p {
+      font-size: 12px;
       color: #888;
-      margin-bottom: 32px;
     }
     .top-buttons {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-top: 16px;
+      gap: 10px;
     }
     .top-btn {
-      padding: 24px;
+      padding: 14px 16px;
       border: none;
-      border-radius: 16px;
-      font-size: 18px;
+      border-radius: 12px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      text-align: center;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       transition: opacity 0.2s;
     }
     .top-btn:active { opacity: 0.7; }
     .btn-album { background: #FFE0B2; color: #E65100; }
     .btn-schedule { background: #BBDEFB; color: #1565C0; }
-    .top-btn .btn-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+    .top-btn .btn-icon { font-size: 24px; }
+
+    /* 入力画面 */
     .screen-title {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       color: #333;
-      margin-bottom: 24px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .form-group { margin-bottom: 20px; }
+    .form-group { margin-bottom: 12px; }
     label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       color: #666;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     textarea {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #ddd;
       border-radius: 8px;
-      font-size: 15px;
-      resize: vertical;
-      min-height: 100px;
+      font-size: 14px;
+      resize: none;
+      height: 80px;
       font-family: inherit;
     }
     textarea:focus { outline: none; border-color: #4CAF50; }
+
     .file-btn {
       display: inline-block;
-      padding: 10px 16px;
+      padding: 8px 14px;
       background: #f0f0f0;
       border: 1px dashed #aaa;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       color: #555;
     }
     input[type="file"] { display: none; }
+
     .file-list {
-      margin-top: 12px;
+      margin-top: 8px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .file-item {
       display: flex;
@@ -96,8 +104,8 @@
       justify-content: space-between;
       background: white;
       border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 13px;
+      padding: 8px 10px;
+      font-size: 12px;
       color: #444;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
@@ -111,67 +119,72 @@
       background: none;
       border: none;
       color: #aaa;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
       padding: 0 4px;
       flex-shrink: 0;
     }
+
     .btn-primary {
       width: 100%;
-      padding: 16px;
+      padding: 14px;
       background: #4CAF50;
       color: white;
       border: none;
       border-radius: 12px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
       margin-top: 8px;
     }
     .btn-primary:active { opacity: 0.8; }
     .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
-    .btn-secondary {
-      width: 100%;
-      padding: 14px;
-      background: white;
-      color: #666;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      font-size: 15px;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    .complete-icon {
-      text-align: center;
-      font-size: 64px;
-      margin: 48px 0 16px;
-    }
-    .complete-text {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 8px;
-    }
-    .complete-sub {
-      text-align: center;
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 16px;
-    }
-    .complete-count {
-      text-align: center;
-      font-size: 13px;
-      color: #4CAF50;
-      margin-bottom: 40px;
-    }
+
     .back-link {
       text-align: center;
-      margin-top: 16px;
-      font-size: 14px;
+      margin-top: 10px;
+      font-size: 13px;
       color: #888;
       cursor: pointer;
       text-decoration: underline;
+    }
+
+    /* 送信中 */
+    .loading-wrap {
+      text-align: center;
+      padding: 40px 0;
+      color: #888;
+    }
+    .loading-wrap .icon { font-size: 40px; margin-bottom: 12px; }
+    .loading-wrap .text {
+      font-size: 15px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .loading-wrap .sub { font-size: 12px; }
+
+    /* 完了画面 */
+    .complete-wrap {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .complete-wrap .icon { font-size: 56px; margin-bottom: 12px; }
+    .complete-wrap .text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .complete-wrap .sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .complete-wrap .count {
+      font-size: 13px;
+      color: #4CAF50;
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -179,15 +192,17 @@
 
 <!-- TOP画面 -->
 <div id="screen-top" class="screen active">
-  <h1>🐻 ぴんくまさん</h1>
-  <p class="subtitle">送るだけで自動整理するよ！</p>
+  <div class="top-header">
+    <h1>🐻 ぴんくまさん</h1>
+    <p>送るだけで自動整理するよ！</p>
+  </div>
   <div class="top-buttons">
     <button class="top-btn btn-album" onclick="selectKind('album')">
-      <span class="btn-icon">📸</span>
+      <span class="btn-icon">📷</span>
       思い出写真を送る
     </button>
     <button class="top-btn btn-schedule" onclick="selectKind('schedule')">
-      <span class="btn-icon">📅</span>
+      <span class="btn-icon">📋</span>
       予定・プリントを送る
     </button>
   </div>
@@ -210,26 +225,28 @@
            multiple onchange="onFileSelected(this)">
     <div class="file-list" id="file-list"></div>
   </div>
-  <button class="btn-primary" onclick="submitFiles()">📨 送信する</button>
+  <button class="btn-primary" onclick="submitFiles()">送信する</button>
   <p class="back-link" onclick="showScreen('top')">← 戻る</p>
 </div>
 
 <!-- 送信中画面 -->
 <div id="screen-loading" class="screen">
-  <div style="text-align:center; padding: 80px 0; color: #888;">
-    <div style="font-size:48px; margin-bottom:16px;">📨</div>
-    <div style="font-size:16px; font-weight:bold; color:#333; margin-bottom:8px;">送信中...</div>
-    <div style="font-size:13px;">しばらくお待ちください</div>
+  <div class="loading-wrap">
+    <div class="icon">📨</div>
+    <div class="text">送信中...</div>
+    <div class="sub">しばらくお待ちください</div>
   </div>
 </div>
 
 <!-- 完了画面 -->
 <div id="screen-complete" class="screen">
-  <div class="complete-icon">🐻</div>
-  <div class="complete-text">ぴんくまさんが受け取ったよ！</div>
-  <div class="complete-sub">順番に整理するね</div>
-  <div class="complete-count" id="complete-count"></div>
-  <button class="btn-primary" onclick="showScreen('top')">続けて送る</button>
+  <div class="complete-wrap">
+    <div class="icon">🐻</div>
+    <div class="text">ぴんくまさんが受け取ったよ！</div>
+    <div class="sub">順番に整理するね</div>
+    <div class="count" id="complete-count"></div>
+    <button class="btn-primary" onclick="showScreen('top')">続けて送る</button>
+  </div>
 </div>
 
 <script>
@@ -271,10 +288,10 @@
     document.getElementById('file-list').innerHTML = '';
     document.getElementById('file-input').value = '';
     if (kind === 'album') {
-      document.getElementById('input-icon').textContent = '📸';
+      document.getElementById('input-icon').textContent = '📷';
       document.getElementById('input-title-label').textContent = '思い出写真を送る';
     } else {
-      document.getElementById('input-icon').textContent = '📅';
+      document.getElementById('input-icon').textContent = '📋';
       document.getElementById('input-title-label').textContent = '予定・プリントを送る';
     }
     showScreen('input');
