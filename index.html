@@ -70,7 +70,7 @@
       border-radius: 8px;
       font-size: 14px;
       resize: none;
-      height: 80px;
+      height: 56px;
       font-family: inherit;
     }
     textarea:focus { outline: none; border-color: #4CAF50; }
@@ -269,15 +269,15 @@
     <span id="input-title-label"></span>
   </div>
   <div class="form-group">
-    <label>メモ・説明（任意）</label>
-    <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
-  </div>
-  <div class="form-group">
     <label>ファイル添付（複数選択可）</label>
     <label class="file-btn" for="file-input">📎 ファイルを選ぶ</label>
     <input type="file" id="file-input" accept="image/*,application/pdf"
            multiple onchange="onFileSelected(this)">
     <div class="file-list" id="file-list"></div>
+  </div>
+  <div class="form-group">
+    <label>メモ・説明（任意）</label>
+    <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
   </div>
   <button class="btn-primary" onclick="submitFiles()">送信する</button>
   <p class="back-link" onclick="showScreen('top')">← 戻る</p>
