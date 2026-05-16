@@ -1,2 +1,2 @@
-# -pinkuma-liff
+# pinkuma-liff
 ぴんくまさん
