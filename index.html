@@ -917,9 +917,15 @@ async function loadMorePhotos() {
 }
 
 // スクロール検知
+// document.getElementById('screen-album').addEventListener('scroll', () => {
+//   const el = document.getElementById('screen-album');
+//   if (el.scrollTop + el.scrollHeight * 0.8 >= el.scrollHeight) {
+//     loadMorePhotos();
+//   }
+// });
 document.getElementById('screen-album').addEventListener('scroll', () => {
   const el = document.getElementById('screen-album');
-  if (el.scrollTop + el.scrollHeight * 0.8 >= el.scrollHeight) {
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
     loadMorePhotos();
   }
 });
