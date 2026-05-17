@@ -912,9 +912,6 @@ document.getElementById('screen-album').addEventListener('scroll', () => {
   }
 });
 
-// 検索用に全データを保持
-let allSchedules = [];
-
 function filterSchedule() {
   const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
   const list = document.getElementById('schedule-list');
