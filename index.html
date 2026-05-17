@@ -350,25 +350,31 @@
     </button>
   </div>
 
-  <!-- 下段：見るボタン3つ横並び -->
-  <div style="display:flex; gap:8px;">
+  <!-- 下段：見るボタン4つ横並び -->
+  <div style="display:flex; gap:6px;">
     <button class="top-btn btn-view"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 4px;"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showSchedule('week')">
       <span class="btn-icon" style="font-size:20px;">📅</span>
-      <span style="font-size:11px;">予定を確認</span>
+      <span style="font-size:10px;">予定を確認</span>
     </button>
     <button class="top-btn btn-album-view"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 4px;"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showAlbum()">
       <span class="btn-icon" style="font-size:20px;">🖼️</span>
-      <span style="font-size:11px;">思い出アルバム</span>
+      <span style="font-size:10px;">アルバム</span>
     </button>
     <button class="top-btn btn-log"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 4px;"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showRecentPosts()">
       <span class="btn-icon" style="font-size:20px;">📋</span>
-      <span style="font-size:11px;">履歴</span>
+      <span style="font-size:10px;">履歴</span>
+    </button>
+    <button class="top-btn"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E3F2FD; color:#1565C0;"
+      onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`, '_blank')">
+      <span class="btn-icon" style="font-size:20px;">🎥</span>
+      <span style="font-size:10px;">動画のアップ</span>
     </button>
   </div>
 </div>
@@ -390,7 +396,7 @@
     <label>メモ・説明（任意）</label>
     <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
   </div>
-  <div class="form-group" id="video-link-group" style="display:none;">
+  <!-- <div class="form-group" id="video-link-group" style="display:none;">
     <label>動画の場合はこちら</label>
     <a id="video-drive-link" 
        href="https://drive.google.com/drive/folders/【DRIVE_ALBUM_FOLDER_ID】"
@@ -398,7 +404,7 @@
        class="btn-more">
       🎥 動画をGoogleドライブに保存する
     </a>
-  </div>
+  </div> -->
   <button class="btn-primary" onclick="submitFiles()">送信する</button>
   <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p>
 </div>
@@ -605,32 +611,54 @@ function onFileSelected(input) {
   const newFiles = Array.from(input.files);
 
   const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
+  const validFiles = newFiles.filter(f => !f.type.startsWith('video/'));
+  
   if (invalidFiles.length > 0) {
-    alert('動画ファイルは選択できません。\n「動画をドライブに保存する」ボタンからアップロードしてください。');
+    alert(`動画ファイル${invalidFiles.length}件は選択できません。\n画像ファイルのみ追加します。`);
     input.value = '';
     return;
   }
   
-  newFiles.forEach(async file => {
+  // newFiles.forEach(async file => {
+  //   // Exif情報から撮影日を取得（albumのみ）
+  //   let takenAt = null;
+  //   if (state.kind === 'album' && file.type.startsWith('image/')) {
+  //     try {
+  //       const exif = await exifr.parse(file);
+  //       if (exif && exif.DateTimeOriginal) {
+  //           const d = new Date(exif.DateTimeOriginal);
+  //           const yyyy = d.getFullYear();
+  //           const MM = String(d.getMonth()+1).padStart(2,'0');
+  //           const dd = String(d.getDate()).padStart(2,'0');
+  //           const hh = String(d.getHours()).padStart(2,'0');
+  //           const mm = String(d.getMinutes()).padStart(2,'0');
+  //           takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
+  //           // 例：「2026-02-23_1430」
+  //       }
+  //     } catch (err) {
+  //       // Exif取得失敗は無視
+  //     }
+  //   }
+
+  validFiles.forEach(async file => {
     // Exif情報から撮影日を取得（albumのみ）
     let takenAt = null;
     if (state.kind === 'album' && file.type.startsWith('image/')) {
       try {
         const exif = await exifr.parse(file);
         if (exif && exif.DateTimeOriginal) {
-            const d = new Date(exif.DateTimeOriginal);
-            const yyyy = d.getFullYear();
-            const MM = String(d.getMonth()+1).padStart(2,'0');
-            const dd = String(d.getDate()).padStart(2,'0');
-            const hh = String(d.getHours()).padStart(2,'0');
-            const mm = String(d.getMinutes()).padStart(2,'0');
-            takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
-            // 例：「2026-02-23_1430」
+          const d = new Date(exif.DateTimeOriginal);
+          const yyyy = d.getFullYear();
+          const MM = String(d.getMonth()+1).padStart(2,'0');
+          const dd = String(d.getDate()).padStart(2,'0');
+          const hh = String(d.getHours()).padStart(2,'0');
+          const mm = String(d.getMinutes()).padStart(2,'0');
+          takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`; // 例：「2026-02-23_1430」
         }
       } catch (err) {
         // Exif取得失敗は無視
       }
-    }
+    }    
 
     const reader = new FileReader();
     reader.onload = (e) => {
