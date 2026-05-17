@@ -330,27 +330,43 @@
     <h1>🐻 ぴんくまさん</h1>
     <p>送るだけで自動整理するよ！</p>
   </div>
-  <div class="top-buttons">
-    <button class="top-btn btn-album" onclick="selectKind('album')">
+
+  <!-- 上段：送るボタン2つ横並び -->
+  <div style="display:flex; gap:10px; margin-bottom:10px;">
+    <button class="top-btn btn-album" 
+      style="flex:1; flex-direction:column; align-items:center; padding:16px 8px;"
+      onclick="selectKind('album')">
       <span class="btn-icon">📷</span>
-      思い出写真を送る
+      <span style="font-size:13px;">思い出写真を送る</span>
     </button>
-    <button class="top-btn btn-schedule" onclick="selectKind('schedule')">
+    <button class="top-btn btn-schedule"
+      style="flex:1; flex-direction:column; align-items:center; padding:16px 8px;"
+      onclick="selectKind('schedule')">
       <span class="btn-icon">📋</span>
-      予定・プリントを送る
+      <span style="font-size:13px;">予定・プリントを送る</span>
     </button>
-    <button class="top-btn btn-view" onclick="showSchedule('week')">
-      <span class="btn-icon">📅</span>
-      予定を確認する
+  </div>
+
+  <!-- 下段：見るボタン3つ横並び -->
+  <div style="display:flex; gap:8px;">
+    <button class="top-btn btn-view"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 4px;"
+      onclick="showSchedule('week')">
+      <span class="btn-icon" style="font-size:20px;">📅</span>
+      <span style="font-size:11px;">予定を確認</span>
     </button>
-    <button class="top-btn btn-album-view" onclick="showAlbum()">
-      <span class="btn-icon">🖼️</span>
-      思い出アルバムを見る
+    <button class="top-btn btn-album-view"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 4px;"
+      onclick="showAlbum()">
+      <span class="btn-icon" style="font-size:20px;">🖼️</span>
+      <span style="font-size:11px;">アルバム</span>
     </button>
-    <button class="top-btn btn-log" onclick="showRecentPosts()">
-      <span class="btn-icon">📋</span>
-      履歴を見る
-    </button>    
+    <button class="top-btn btn-log"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 4px;"
+      onclick="showRecentPosts()">
+      <span class="btn-icon" style="font-size:20px;">📋</span>
+      <span style="font-size:11px;">履歴</span>
+    </button>
   </div>
 </div>
 
