@@ -525,8 +525,12 @@ function onFileSelected(input) {
     if (state.kind === 'album' && file.type.startsWith('image/')) {
       try {
         const exif = await exifr.parse(file);
+        // if (exif && exif.DateTimeOriginal) {
+        //   const d = exif.DateTimeOriginal;
+        //   takenAt = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        // }
         if (exif && exif.DateTimeOriginal) {
-          const d = exif.DateTimeOriginal;
+          const d = new Date(exif.DateTimeOriginal);
           takenAt = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
         }
       } catch (err) {
