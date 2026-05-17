@@ -244,6 +244,7 @@
         color: #4CAF50;
         text-decoration: none;
     }
+    .btn-log { background: #F3E5F5; color: #6A1B9A; }    
     /* 編集画面 */
     .edit-field {
       background: white;
@@ -307,6 +308,10 @@
       <span class="btn-icon">📅</span>
       予定を確認する
     </button>
+    <button class="top-btn btn-log" onclick="showRecentPosts()">
+      <span class="btn-icon">📋</span>
+      履歴を見る
+    </button>    
   </div>
 </div>
 
@@ -366,6 +371,15 @@
   <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p>
 </div>
 
+<!-- 履歴画面 -->
+<div id="screen-log" class="screen">
+  <div class="screen-title">📋 履歴</div>
+  <div class="schedule-list" id="log-list">
+    <div class="schedule-empty">読み込み中...</div>
+  </div>
+  <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p>
+</div>
+  
 <!-- 編集画面 -->
 <div id="screen-edit" class="screen">
   <div class="screen-title">✏️ 編集</div>
@@ -622,6 +636,47 @@ async function deleteSchedule() {
   }
 }
 
+const LOG_LIMIT = 5; // ← 件数はここを変更
+
+async function showRecentPosts() {
+  showScreen('log');
+  document.getElementById('log-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'getRecentPosts',
+        limit: LOG_LIMIT
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    const list = document.getElementById('log-list');
+    if (data.posts.length === 0) {
+      list.innerHTML = '<div class="schedule-empty">投稿はありません</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    data.posts.forEach(p => {
+      const icon = p.kind === 'album' ? '📷' : '📅';
+      const item = document.createElement('div');
+      item.className = 'schedule-item';
+      item.innerHTML = `
+        <div class="schedule-date">${p.postedAt} ${p.userName}</div>
+        <div class="schedule-title">${icon} ${p.title}</div>
+      `;
+      list.appendChild(item);
+    });
+
+  } catch (err) {
+    document.getElementById('log-list').innerHTML =
+      '<div class="schedule-empty">読み込みに失敗しました</div>';
+  }
+}
+  
   initLiff();
 </script>
 </body>
