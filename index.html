@@ -343,6 +343,7 @@
   </style>
 </head>
 <body>
+<button class="home-btn" id="home-btn" onclick="showScreen('top')">🏠 ホーム</button>  
 
 <!-- TOP画面 -->
 <div id="screen-top" class="screen active">
@@ -402,7 +403,6 @@
     <span id="input-icon"></span>
     <span id="input-title-label"></span>
   </div>
-  <button class="home-btn" id="home-btn" onclick="showScreen('top')">🏠 ホーム</button>  
   <div class="form-group">
     <label>ファイル添付（複数選択可） ※画像のみ</label>
     <label class="file-btn" for="file-input">📎 ファイルを選ぶ</label>
@@ -561,9 +561,9 @@
       document.getElementById('input-title-label').textContent = '予定・プリントを送る';
     }
 
-    // albumのときだけ動画リンクを表示
-    document.getElementById('video-link-group').style.display = 
-      kind === 'album' ? 'block' : 'none';
+    // // albumのときだけ動画リンクを表示
+    // document.getElementById('video-link-group').style.display = 
+    //   kind === 'album' ? 'block' : 'none';
     
     showScreen('input');
   }
