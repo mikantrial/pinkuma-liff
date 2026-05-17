@@ -841,9 +841,12 @@ async function showAlbum() {
 async function loadMorePhotos() {
   if (albumLoading || !albumHasMore) return;
   albumLoading = true;
-
-  console.log('loadMorePhotos開始 offset:', albumOffset);
-
+  
+  // 最初の読み込み時に「読み込み中...」を消す
+  if (albumOffset === 0) {
+    document.getElementById('photo-grid').innerHTML = '';
+  }
+  
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
@@ -885,8 +888,6 @@ async function loadMorePhotos() {
 
     albumOffset += data.photos.length;
     albumHasMore = albumOffset < data.total;
-
-    console.log('取得件数:', data.photos.length, '合計:', data.total);
 
   } catch (err) {
     if (albumOffset === 0) {
