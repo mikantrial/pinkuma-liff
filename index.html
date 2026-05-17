@@ -402,7 +402,7 @@
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showRecentPosts()">
       <span class="btn-icon" style="font-size:20px;">📋</span>
-      <span style="font-size:10px;">履歴</span>
+      <span style="font-size:10px;">送信履歴</span>
     </button>
   </div>
 
@@ -479,7 +479,7 @@
 
 <!-- 履歴画面 -->
 <div id="screen-log" class="screen">
-  <div class="screen-title">📋 履歴</div>
+  <div class="screen-title">📋 最近の送信履歴 ※20件まで</div>
   <div class="schedule-list" id="log-list">
     <div class="schedule-empty">読み込み中...</div>
   </div>
@@ -531,7 +531,7 @@
   const LIFF_ID = '2010101999-lNupzNWJ';
   const DRIVE_ALBUM_FOLDER_ID = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
   const DRIVE_SCHEDULE_FOLDER_ID = '1OSgA9xlWdSFxaHaKthzqFht0jnnDuNfP';
-  const LOG_LIMIT = 10; // ← 履歴の件数はここを変更
+  const LOG_LIMIT = 20; // ← 履歴の件数はここを変更
 
   let state = {
     kind: null,
