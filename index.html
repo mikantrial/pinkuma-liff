@@ -285,7 +285,41 @@
       font-weight: bold;
       cursor: pointer;
       margin-top: 8px;
-    }    
+    }
+    /* アルバム画面 */
+    .btn-album-view { background: #FCE4EC; color: #880E4F; }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .photo-item {
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #eee;
+    }
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .btn-more {
+      width: 100%;
+      padding: 12px;
+      background: white;
+      color: #4CAF50;
+      border: 1px solid #4CAF50;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -308,6 +342,10 @@
     <button class="top-btn btn-view" onclick="showSchedule('week')">
       <span class="btn-icon">📅</span>
       予定を確認する
+    </button>
+    <button class="top-btn btn-album-view" onclick="showAlbum()">
+      <span class="btn-icon">🖼️</span>
+      思い出アルバムを見る
     </button>
     <button class="top-btn btn-log" onclick="showRecentPosts()">
       <span class="btn-icon">📋</span>
@@ -407,7 +445,19 @@
   <button class="btn-primary" onclick="saveEdit()">💾 保存する</button>
   <button class="btn-danger" onclick="deleteSchedule()">🗑️ 削除する</button>
   <p class="back-link" onclick="showScreen('schedule')">← ホームに戻る</p>
-</div>  
+</div>
+
+<!-- アルバム画面 -->
+<div id="screen-album" class="screen">
+  <div class="screen-title">📷 思い出アルバム</div>
+  <div class="photo-grid" id="photo-grid">
+    <div class="schedule-empty">読み込み中...</div>
+  </div>
+  <a id="album-folder-link" class="btn-more" target="_blank">
+    📁 もっと見る（Googleドライブ）
+  </a>
+  <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p>
+</div>
 
 <script>
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
@@ -696,6 +746,56 @@ async function showRecentPosts() {
   } catch (err) {
     document.getElementById('log-list').innerHTML =
       '<div class="schedule-empty">読み込みに失敗しました</div>';
+  }
+}
+
+async function showAlbum() {
+  showScreen('album');
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'getAlbum',
+        limit: 20
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+
+    // もっと見るリンクを設定
+    document.getElementById('album-folder-link').href = data.albumFolderUrl;
+
+    if (data.photos.length === 0) {
+      grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    data.photos.forEach(p => {
+      // GoogleドライブのURLをサムネイルURLに変換
+      const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
+                     p.fileUrl.match(/id=([^&]+)/)?.[1];
+      const thumbnailUrl = fileId 
+        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`
+        : null;
+
+      const item = document.createElement('div');
+      item.className = 'photo-item';
+      item.onclick = () => window.open(p.fileUrl, '_blank');
+
+      if (thumbnailUrl) {
+        item.innerHTML = `<img src="${thumbnailUrl}" alt="${p.title}" loading="lazy">`;
+      } else {
+        item.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:12px;color:#aaa;">📷</div>`;
+      }
+      grid.appendChild(item);
+    });
+
+  } catch (err) {
+    grid.innerHTML = '<div class="schedule-empty">読み込みに失敗しました</div>';
   }
 }
   
