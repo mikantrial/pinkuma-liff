@@ -368,25 +368,25 @@
     </button>
   </div>
 
-  <!-- 下段：見るボタン4つ横並び -->
-  <div style="display:flex; gap:6px;">
+  <!-- 下段1行目：予定確認・プリント画像・アルバム・動画 -->
+  <div style="display:flex; gap:6px; margin-bottom:6px;">
     <button class="top-btn btn-view"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showSchedule('week')">
       <span class="btn-icon" style="font-size:20px;">📅</span>
       <span style="font-size:10px;">予定を確認</span>
     </button>
+    <button class="top-btn"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E8F5E9; color:#1B5E20;"
+      onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_SCHEDULE_FOLDER_ID}`, '_blank')">
+      <span class="btn-icon" style="font-size:20px;">📄</span>
+      <span style="font-size:10px;">プリント画像</span>
+    </button>
     <button class="top-btn btn-album-view"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showAlbum()">
       <span class="btn-icon" style="font-size:20px;">🖼️</span>
       <span style="font-size:10px;">アルバム</span>
-    </button>
-    <button class="top-btn btn-log"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
-      onclick="showRecentPosts()">
-      <span class="btn-icon" style="font-size:20px;">📋</span>
-      <span style="font-size:10px;">履歴</span>
     </button>
     <button class="top-btn"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E3F2FD; color:#1565C0;"
@@ -395,7 +395,16 @@
       <span style="font-size:10px;">動画のアップ</span>
     </button>
   </div>
-</div>
+  
+  <!-- 下段2行目：履歴 -->
+  <div style="display:flex; gap:6px;">
+    <button class="top-btn btn-log"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="showRecentPosts()">
+      <span class="btn-icon" style="font-size:20px;">📋</span>
+      <span style="font-size:10px;">履歴</span>
+    </button>
+  </div>
 
 <!-- 入力画面 -->
 <div id="screen-input" class="screen">
@@ -521,6 +530,7 @@
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
   const LIFF_ID = '2010101999-lNupzNWJ';
   const DRIVE_ALBUM_FOLDER_ID = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
+  const DRIVE_SCHEDULE_FOLDER_ID = '1OSgA9xlWdSFxaHaKthzqFht0jnnDuNfP';
   const LOG_LIMIT = 10; // ← 履歴の件数はここを変更
 
   let state = {
