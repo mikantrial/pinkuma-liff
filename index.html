@@ -832,7 +832,7 @@ async function showAlbum() {
   albumHasMore = true;
   showScreen('album');
   const grid = document.getElementById('photo-grid');
-  grid.innerHTML = '';
+  grid.innerHTML = '<div class="schedule-empty">読み込み中...</div>';
   document.getElementById('album-folder-link').href = 
     `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
   await loadMorePhotos();
