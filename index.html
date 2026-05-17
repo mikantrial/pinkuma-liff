@@ -843,36 +843,48 @@ async function showRecentPosts() {
   }
 }
 
+// アルバムを見る
+let albumOffset = 0;
+let albumLoading = false;
+let albumHasMore = true;
+  
 async function showAlbum() {
+  albumOffset = 0;
+  albumLoading = false;
+  albumHasMore = true;
   showScreen('album');
   const grid = document.getElementById('photo-grid');
-  grid.innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+  grid.innerHTML = '';
+  document.getElementById('album-folder-link').href = 
+    `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
+  await loadMorePhotos();
+}
+
+async function loadMorePhotos() {
+  if (albumLoading || !albumHasMore) return;
+  albumLoading = true;
 
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({
         action: 'getAlbum',
-        limit: 20
+        limit: 20,
+        offset: albumOffset
       })
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
 
-    // // もっと見るリンクを設定
-    // document.getElementById('album-folder-link').href = data.albumFolderUrl;
-    // GASから取得していた部分を削除して直接生成
-    document.getElementById('album-folder-link').href = 
-      `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;    
+    const grid = document.getElementById('photo-grid');
 
-    if (data.photos.length === 0) {
+    if (albumOffset === 0 && data.photos.length === 0) {
       grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
+      albumHasMore = false;
       return;
     }
 
-    grid.innerHTML = '';
     data.photos.forEach(p => {
-      // GoogleドライブのURLをサムネイルURLに変換
       const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
                      p.fileUrl.match(/id=([^&]+)/)?.[1];
       const thumbnailUrl = fileId 
@@ -891,10 +903,26 @@ async function showAlbum() {
       grid.appendChild(item);
     });
 
+    albumOffset += data.photos.length;
+    albumHasMore = albumOffset < data.total;
+
   } catch (err) {
-    grid.innerHTML = '<div class="schedule-empty">読み込みに失敗しました</div>';
+    if (albumOffset === 0) {
+      document.getElementById('photo-grid').innerHTML = 
+        '<div class="schedule-empty">読み込みに失敗しました</div>';
+    }
+  } finally {
+    albumLoading = false;
   }
 }
+
+// スクロール検知
+document.getElementById('screen-album').addEventListener('scroll', () => {
+  const el = document.getElementById('screen-album');
+  if (el.scrollTop + el.scrollHeight * 0.8 >= el.scrollHeight) {
+    loadMorePhotos();
+  }
+});
   
   initLiff();
 </script>
