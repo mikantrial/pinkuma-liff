@@ -864,6 +864,8 @@ async function loadMorePhotos() {
   if (albumLoading || !albumHasMore) return;
   albumLoading = true;
 
+  console.log('loadMorePhotos開始 offset:', albumOffset);
+
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
@@ -905,6 +907,8 @@ async function loadMorePhotos() {
 
     albumOffset += data.photos.length;
     albumHasMore = albumOffset < data.total;
+
+    console.log('取得件数:', data.photos.length, '合計:', data.total);
 
   } catch (err) {
     if (albumOffset === 0) {
