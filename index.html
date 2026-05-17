@@ -244,6 +244,46 @@
         color: #4CAF50;
         text-decoration: none;
     }
+    /* 編集画面 */
+    .edit-field {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .edit-field label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .edit-field input,
+    .edit-field textarea {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #eee;
+      padding: 4px 0;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+    }
+    .edit-field input:focus,
+    .edit-field textarea:focus {
+      outline: none;
+      border-bottom-color: #4CAF50;
+    }
+    .btn-danger {
+      width: 100%;
+      padding: 14px;
+      background: white;
+      color: #e53935;
+      border: 1px solid #e53935;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }    
   </style>
 </head>
 <body>
@@ -326,6 +366,34 @@
   <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p>
 </div>
 
+<!-- 編集画面 -->
+<div id="screen-edit" class="screen">
+  <div class="screen-title">✏️ 編集</div>
+  <div class="edit-field">
+    <label>タイトル</label>
+    <input type="text" id="edit-title">
+  </div>
+  <div class="edit-field">
+    <label>AI解析内容</label>
+    <textarea id="edit-content" rows="3"></textarea>
+  </div>
+  <div class="edit-field">
+    <label>担当者</label>
+    <input type="text" id="edit-assignee">
+  </div>
+  <div class="edit-field">
+    <label>予定日</label>
+    <input type="date" id="edit-scheduled-date">
+  </div>
+  <div class="edit-field">
+    <label>保管期限</label>
+    <input type="date" id="edit-retention">
+  </div>
+  <button class="btn-primary" onclick="saveEdit()">💾 保存する</button>
+  <button class="btn-danger" onclick="deleteSchedule()">🗑️ 削除する</button>
+  <p class="back-link" onclick="showScreen('schedule')">← 戻る</p>
+</div>  
+
 <script>
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
   const LIFF_ID = '2010101999-lNupzNWJ';
@@ -334,7 +402,9 @@
     kind: null,
     userId: null,
     userName: null,
-    files: []
+    files: [],
+    editId: null,      // ← 追加
+    editPeriod: 'week' // ← 追加（編集後に戻るタブを記憶）
   };
 
   async function initLiff() {
@@ -415,6 +485,8 @@
         
         const item = document.createElement('div');
         item.className = 'schedule-item';
+        item.style.cursor = 'pointer';
+        item.onclick = () => openEdit(s, period);
         item.innerHTML = `
           ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
           <div class="schedule-title">${s.title}</div>
@@ -494,6 +566,61 @@
       showScreen('input');
     }
   }
+
+//編集画面を開く関数
+function openEdit(s, period) {
+  state.editId = s.id;
+  state.editPeriod = period;
+  document.getElementById('edit-title').value = s.title || '';
+  document.getElementById('edit-content').value = s.content || '';
+  document.getElementById('edit-assignee').value = s.assignee || '';
+  document.getElementById('edit-scheduled-date').value = s.scheduledDate || '';
+  document.getElementById('edit-retention').value = s.retentionDate || '';
+  showScreen('edit');
+}
+
+//保存・削除関数
+async function saveEdit() {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'updateSchedule',
+        id: state.editId,
+        title: document.getElementById('edit-title').value,
+        content: document.getElementById('edit-content').value,
+        assignee: document.getElementById('edit-assignee').value,
+        scheduledDate: document.getElementById('edit-scheduled-date').value,
+        retentionDate: document.getElementById('edit-retention').value
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    alert('保存しました！');
+    showSchedule(state.editPeriod);
+  } catch (err) {
+    alert('保存に失敗しました: ' + err.message);
+  }
+}
+
+async function deleteSchedule() {
+  if (!confirm('この予定を削除しますか？')) return;
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'deleteSchedule',
+        id: state.editId
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    alert('削除しました！');
+    showSchedule(state.editPeriod);
+  } catch (err) {
+    alert('削除に失敗しました: ' + err.message);
+  }
+}
 
   initLiff();
 </script>
