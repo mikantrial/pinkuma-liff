@@ -450,6 +450,12 @@
 <!-- 予定一覧画面 -->
 <div id="screen-schedule" class="screen">
   <div class="screen-title">📅 予定を確認する</div>
+  <div class="form-group">
+    <input type="text" id="schedule-search" 
+      placeholder="🔍 キーワードで絞り込む"
+      oninput="filterSchedule()"
+      style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:8px;">
+  </div>
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-week" onclick="showSchedule('week')">1週間以内</button>
     <button class="tab-btn" id="tab-month" onclick="showSchedule('month')">1ヶ月以内</button>
@@ -576,57 +582,29 @@
   }
 
   // 予定一覧を表示
+  let currentPeriod = 'week';
+  let allSchedules = [];
+  
   async function showSchedule(period) {
-    // タブの切り替え
+    currentPeriod = period;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('tab-' + period).classList.add('active');
-
+    document.getElementById('schedule-search').value = '';
+  
     showScreen('schedule');
     document.getElementById('schedule-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
-
+  
     try {
       const res = await fetch(GAS_URL, {
         method: 'POST',
-        body: JSON.stringify({
-          action: 'getSchedule',
-          period: period
-        })
+        body: JSON.stringify({ action: 'getSchedule', period: period })
       });
       const data = await res.json();
-
       if (!data.success) throw new Error(data.error);
-
-      const list = document.getElementById('schedule-list');
-
-      if (data.schedules.length === 0) {
-        list.innerHTML = '<div class="schedule-empty">予定はありません</div>';
-        return;
-      }
-
-      list.innerHTML = '';
-      data.schedules.forEach(s => {
-        let dateStr = '';
-        if (s.scheduledDate) {
-          const date = new Date(s.scheduledDate);
-          if (!isNaN(date.getTime())) {
-            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-            dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
-          }
-        }
-        
-        const item = document.createElement('div');
-        item.className = 'schedule-item';
-        item.style.cursor = 'pointer';
-        item.onclick = () => openEdit(s, period);
-        item.innerHTML = `
-          ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
-          <div class="schedule-title">${s.title}</div>
-          ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
-          ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
-        `;
-        list.appendChild(item);
-      });
-
+  
+      allSchedules = data.schedules;
+      filterSchedule();
+  
     } catch (err) {
       document.getElementById('schedule-list').innerHTML =
         '<div class="schedule-empty">読み込みに失敗しました</div>';
@@ -933,6 +911,52 @@ document.getElementById('screen-album').addEventListener('scroll', () => {
     loadMorePhotos();
   }
 });
+
+// 検索用に全データを保持
+let allSchedules = [];
+
+function filterSchedule() {
+  const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
+  const list = document.getElementById('schedule-list');
+
+  const filtered = keyword
+    ? allSchedules.filter(s =>
+        (s.title || '').toLowerCase().includes(keyword) ||
+        (s.content || '').toLowerCase().includes(keyword) ||
+        (s.assignee || '').toLowerCase().includes(keyword)
+      )
+    : allSchedules;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="schedule-empty">該当する予定はありません</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  filtered.forEach(s => {
+    let dateStr = '';
+    if (s.scheduledDate) {
+      const date = new Date(s.scheduledDate);
+      if (!isNaN(date.getTime())) {
+        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+        dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
+      }
+    }
+
+    const item = document.createElement('div');
+    item.className = 'schedule-item';
+    item.style.cursor = 'pointer';
+    item.onclick = () => openEdit(s, currentPeriod);
+    item.innerHTML = `
+      ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
+      <div class="schedule-title">${s.title}</div>
+      ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
+      ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
+    `;
+    list.appendChild(item);
+  });
+}
+  
   
   initLiff();
 </script>
