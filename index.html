@@ -545,6 +545,13 @@
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + name).classList.add('active');
+    // TOP画面以外はホームボタンを表示
+    const homeBtn = document.getElementById('home-btn');
+    if (name === 'top') {
+      homeBtn.classList.remove('visible');
+    } else {
+      homeBtn.classList.add('visible');
+    }    
   }
 
   function selectKind(kind) {
