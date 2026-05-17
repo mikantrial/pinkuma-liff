@@ -371,6 +371,15 @@
     <label>メモ・説明（任意）</label>
     <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
   </div>
+  <div class="form-group" id="video-link-group" style="display:none;">
+    <label>動画の場合はこちら</label>
+    <a id="video-drive-link" 
+       href="https://drive.google.com/drive/folders/【DRIVE_ALBUM_FOLDER_ID】"
+       target="_blank" 
+       class="btn-more">
+      🎥 動画をGoogleドライブに保存する
+    </a>
+  </div>
   <button class="btn-primary" onclick="submitFiles()">送信する</button>
   <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p>
 </div>
@@ -462,6 +471,7 @@
 <script>
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
   const LIFF_ID = '2010101999-lNupzNWJ';
+  const DRIVE_ALBUM_FOLDER_ID = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
 
   let state = {
     kind: null,
@@ -506,6 +516,11 @@
       document.getElementById('input-icon').textContent = '📋';
       document.getElementById('input-title-label').textContent = '予定・プリントを送る';
     }
+
+    // albumのときだけ動画リンクを表示
+    document.getElementById('video-link-group').style.display = 
+      kind === 'album' ? 'block' : 'none';
+    
     showScreen('input');
   }
 
@@ -569,6 +584,14 @@
 
 function onFileSelected(input) {
   const newFiles = Array.from(input.files);
+
+  const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
+  if (invalidFiles.length > 0) {
+    alert('動画ファイルは選択できません。\n「動画をドライブに保存する」ボタンからアップロードしてください。');
+    input.value = '';
+    return;
+  }
+  
   newFiles.forEach(async file => {
     // Exif情報から撮影日を取得（albumのみ）
     let takenAt = null;
@@ -765,8 +788,11 @@ async function showAlbum() {
     const data = await res.json();
     if (!data.success) throw new Error(data.error);
 
-    // もっと見るリンクを設定
-    document.getElementById('album-folder-link').href = data.albumFolderUrl;
+    // // もっと見るリンクを設定
+    // document.getElementById('album-folder-link').href = data.albumFolderUrl;
+    // GASから取得していた部分を削除して直接生成
+    document.getElementById('album-folder-link').href = 
+      `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;    
 
     if (data.photos.length === 0) {
       grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
