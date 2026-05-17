@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ぴんくまさん</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script> <!--撮影日取得のため-->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -516,22 +517,37 @@
     }
   }
 
-  function onFileSelected(input) {
-    const newFiles = Array.from(input.files);
-    newFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        state.files.push({
-          fileBase64: e.target.result,
-          fileName: file.name,
-          mimeType: file.type
-        });
-        renderFileList();
-      };
-      reader.readAsDataURL(file);
-    });
-    input.value = '';
-  }
+function onFileSelected(input) {
+  const newFiles = Array.from(input.files);
+  newFiles.forEach(async file => {
+    // Exif情報から撮影日を取得（albumのみ）
+    let takenAt = null;
+    if (state.kind === 'album' && file.type.startsWith('image/')) {
+      try {
+        const exif = await exifr.parse(file);
+        if (exif && exif.DateTimeOriginal) {
+          const d = exif.DateTimeOriginal;
+          takenAt = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        }
+      } catch (err) {
+        // Exif取得失敗は無視
+      }
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      state.files.push({
+        fileBase64: e.target.result,
+        fileName: file.name,
+        mimeType: file.type,
+        takenAt: takenAt // ← 追加（例：「2024-03」）
+      });
+      renderFileList();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
 
   function renderFileList() {
     const list = document.getElementById('file-list');
