@@ -491,12 +491,15 @@
     <span id="input-title-label"></span>
   </div>
   <div class="form-group">
-    <label>ファイル添付（複数選択可）<br>※画像・PDF・Word・Excel・PowerPointを選択可</label>
+    <label>ファイル添付（複数選択可）</label>
     <label class="file-btn" for="file-input">📎 ファイルを選ぶ</label>
     <input type="file" id="file-input" 
       accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/msword"
       multiple onchange="onFileSelected(this)">
     <div class="file-list" id="file-list"></div>
+    <div style="font-size:11px; color:#888; margin-top:4px;">
+      ※画像・PDF・Word・Excel・PowerPointを選択可
+    </div>    
   </div>
   <!-- 動画専用（albumのみ表示） -->
   <div class="form-group" id="video-input-group" style="display:none;">
@@ -512,8 +515,12 @@
     </div>
   </div>
   <div class="form-group">
-    <label>メモ・説明（任意）<br>※動画・Word・Excel・PowerPointは内容を読み取れないため、ここに概要入力</label>
+    <label>メモ・説明（任意）</label>
     <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
+    <div style="font-size:11px; color:#888; margin-top:4px;">
+      ※画像・PDFは内容を読み取りますが、メモ・説明を登録するとより正確になります。<br>
+      ※動画・Word・Excel・PowerPointは内容を読み取れないため、必ずメモ・概要を入力してください。
+    </div>
   </div>
   <!-- <div class="form-group" id="video-link-group" style="display:none;">
     <label>動画の場合はこちら</label>
