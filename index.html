@@ -500,13 +500,13 @@
   </div>
   <!-- 動画専用（albumのみ表示） -->
   <div class="form-group" id="video-input-group" style="display:none;">
-    <label>動画添付（1個のみ・30MB以下）</label>
+    <label>動画添付（1個のみ・18MB以下）</label>
     <label class="file-btn" for="video-input">🎥 動画を選ぶ</label>
     <input type="file" id="video-input" accept="video/*"
       onchange="onVideoSelected(this)">
     <div id="video-file-list"></div>
     <div style="font-size:11px; color:#888; margin-top:4px;">
-      ※30MBを超える動画は
+      ※18MBを超える動画は
       <a id="video-drive-link" href="#" target="_blank" style="color:#4CAF50;">Googleドライブ</a>
       から直接アップしてください
     </div>
@@ -655,7 +655,7 @@
       「思い出写真を送る」ボタンから送信してください。<br>
       <br>
       📎 ファイル添付：画像・PDF・Word・Excel・PowerPoint（複数可）<br>
-      🎥 動画：30MB以下のみ（1個のみ）。30MB超はGoogleドライブから直接アップ。<br>
+      🎥 動画：18MB以下のみ（1個のみ）。18MB超はGoogleドライブから直接アップ。<br>
       <br>
       画像・PDFはAIが内容を自動で読み取りタイトルと説明文を作成します。<br>
       Word・Excel・PowerPoint・動画はメモ欄に概要を入力してください。<br>
@@ -848,7 +848,7 @@
   }
 
   //動画選択
-  const MAX_VIDEO_SIZE_MB = 30;
+  const MAX_VIDEO_SIZE_MB = 18;
   
   function onVideoSelected(input) {
     const file = input.files[0];
@@ -856,7 +856,7 @@
   
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_VIDEO_SIZE_MB) {
-      alert(`動画ファイルが大きすぎます（${sizeMB.toFixed(1)}MB）。\n30MB以下の動画のみアップできます。\n大きい動画はGoogleドライブから直接アップしてください。`);
+      alert(`動画ファイルが大きすぎます（${sizeMB.toFixed(1)}MB）。\n'+MAX_VIDEO_SIZE_MB+'MB以下の動画のみアップできます。\n大きい動画はGoogleドライブから直接アップしてください。`);
       input.value = '';
       state.videoFile = null;
       document.getElementById('video-file-list').innerHTML = '';
