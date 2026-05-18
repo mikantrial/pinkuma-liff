@@ -492,8 +492,9 @@
   <div class="form-group">
     <label>ファイル添付（複数選択可） ※画像/PDFを選択できます。動画は選択できません。</label>
     <label class="file-btn" for="file-input">📎 ファイルを選ぶ</label>
-    <input type="file" id="file-input" accept="image/*,application/pdf"
-           multiple onchange="onFileSelected(this)">
+    <input type="file" id="file-input" 
+      accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/msword"
+      multiple onchange="onFileSelected(this)">
     <div class="file-list" id="file-list"></div>
   </div>
   <div class="form-group">
