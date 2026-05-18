@@ -301,6 +301,7 @@
       margin-bottom: 12px;
     }
     .photo-item {
+      position: relative; /* ← 追加 */
       aspect-ratio: 1;
       overflow: hidden;
       border-radius: 6px;
@@ -311,6 +312,20 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    .photo-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.45);
+      padding: 4px 6px;
+    }
+    .photo-overlay-title {
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .btn-more {
       width: 100%;
@@ -342,6 +357,55 @@
       display: none;
     }
     .home-btn.visible { display: block; }
+    /* アルバムポップアップ */
+    .album-popup-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .album-popup {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+    }
+    .album-popup-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+    .album-popup-body {
+      padding: 12px 16px;
+    }
+    .album-popup-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .album-popup-content {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .album-popup-close {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      margin-top: 6px;
+    }
     
   </style>
 </head>
@@ -539,6 +603,19 @@
   <!-- <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p> -->
 </div>
 
+<!-- アルバムポップアップ -->
+<div id="album-popup-overlay" class="album-popup-overlay" style="display:none;" onclick="closeAlbumPopup(event)">
+  <div class="album-popup">
+    <img id="album-popup-img" class="album-popup-img" src="" alt="">
+    <div class="album-popup-body">
+      <div id="album-popup-title" class="album-popup-title"></div>
+      <div id="album-popup-content" class="album-popup-content"></div>
+      <a id="album-popup-link" class="btn-more" target="_blank">📁 ドライブで開く</a>
+      <button class="album-popup-close" onclick="closeAlbumPopup()">× 閉じる</button>
+    </div>
+  </div>
+</div>
+  
 <!-- 使い方画面 -->
 <div id="screen-howto" class="screen">
   <div class="screen-title">❓ 使い方</div>
@@ -931,13 +1008,21 @@ async function loadMorePhotos() {
       const thumbnailUrl = fileId 
         ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`
         : null;
-
+      const thumbnailUrlLarge = fileId
+        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`
+        : null;
+    
       const item = document.createElement('div');
       item.className = 'photo-item';
-      item.onclick = () => window.open(p.fileUrl, '_blank');
-
+      item.onclick = () => openAlbumPopup(p, thumbnailUrlLarge);
+    
       if (thumbnailUrl) {
-        item.innerHTML = `<img src="${thumbnailUrl}" alt="${p.title}" loading="lazy">`;
+        item.innerHTML = `
+          <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy">
+          <div class="photo-overlay">
+            <div class="photo-overlay-title">${p.title}</div>
+          </div>
+        `;
       } else {
         item.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:12px;color:#aaa;">📷</div>`;
       }
@@ -956,7 +1041,7 @@ async function loadMorePhotos() {
     albumLoading = false;
   }
 }
-
+  
 // スクロール検知
 // document.getElementById('screen-album').addEventListener('scroll', () => {
 //   const el = document.getElementById('screen-album');
@@ -971,6 +1056,22 @@ document.getElementById('screen-album').addEventListener('scroll', () => {
   }
 });
 
+// ポップアップ用
+function openAlbumPopup(p, thumbnailUrlLarge) {
+  document.getElementById('album-popup-img').src = thumbnailUrlLarge || '';
+  document.getElementById('album-popup-title').textContent = p.title || '';
+  document.getElementById('album-popup-content').textContent = p.content || '';
+  document.getElementById('album-popup-link').href = p.fileUrl || '#';
+  document.getElementById('album-popup-overlay').style.display = 'flex';
+}
+
+function closeAlbumPopup(event) {
+  if (!event || event.target === document.getElementById('album-popup-overlay')) {
+    document.getElementById('album-popup-overlay').style.display = 'none';
+  }
+}
+
+//予定の検索
 function filterSchedule() {
   const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
   const list = document.getElementById('schedule-list');
@@ -1011,6 +1112,7 @@ function filterSchedule() {
     `;
     list.appendChild(item);
   });
+    
 }
   
   
