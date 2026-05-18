@@ -505,6 +505,11 @@
     <input type="file" id="video-input" accept="video/*"
       onchange="onVideoSelected(this)">
     <div id="video-file-list"></div>
+    <div style="font-size:11px; color:#888; margin-top:4px;">
+      ※30MBを超える動画は
+      <a id="video-drive-link" href="#" target="_blank" style="color:#4CAF50;">Googleドライブ</a>
+      から直接アップしてください
+    </div>
   </div>
   <div class="form-group">
     <label>メモ・説明（任意）<br>※Word・Excel・PowerPointは内容を読み取れないため、ここに概要を入力</label>
@@ -529,6 +534,7 @@
     <div class="icon">📨</div>
     <div class="text">送信中...</div>
     <div class="sub">しばらくお待ちください</div>
+    <div class="sub" style="margin-top:8px; color:#e53935;">⚠️ 画面を閉じないでください</div>
   </div>
 </div>
 
@@ -628,6 +634,7 @@
 </div>
   
 <!-- 使い方画面 -->
+<!-- 使い方画面 -->
 <div id="screen-howto" class="screen">
   <div class="screen-title">❓ 使い方</div>
 
@@ -638,29 +645,38 @@
       予定の確認や雑談ができます。<br>
       例）「ぴんくまさん、こんにちは」<br>
       例）「ぴんくまさん、今週の漢検の予定を教えて」<br>
-      例）「ぴんくまさん、大阪旅行の写真が見たい」<br>
+      例）「ぴんくまさん、大阪旅行の写真が見たい」
     </div>
-  </div>  
+  </div>
 
   <div class="schedule-item" style="margin-bottom:8px;">
-    <div class="schedule-title">📷 思い出写真を送る</div>
+    <div class="schedule-title">📷 思い出写真・動画を送る</div>
     <div class="schedule-content" style="margin-top:6px;">
-      「思い出写真を送る」ボタンから、写真やPDFを選んで、送信してください。（動画は選択できません。）<br>
-      撮影日時を自動で取得して、Googleドライブの年月ごとのフォルダーへ整理します。<br>
-      AIが、画像やPDFを解析して、タイトルと説明文を自動で作成します。メモ欄に説明を入力すると、その説明文も使われます。
+      「思い出写真を送る」ボタンから送信してください。<br>
+      <br>
+      📎 ファイル添付：画像・PDF・Word・Excel・PowerPoint（複数可）<br>
+      🎥 動画：30MB以下のみ（1個のみ）。30MB超はGoogleドライブから直接アップ。<br>
+      <br>
+      画像・PDFはAIが内容を自動で読み取りタイトルと説明文を作成します。<br>
+      Word・Excel・PowerPoint・動画はメモ欄に概要を入力してください。<br>
+      撮影日時を自動取得して、Googleドライブの年月フォルダへ整理します。
     </div>
   </div>
 
   <div class="schedule-item" style="margin-bottom:8px;">
     <div class="schedule-title">📋 予定・プリントを送る</div>
     <div class="schedule-content" style="margin-top:6px;">
-      「予定・プリントを送る」ボタンから、プリントの写真やPDFを送信してください。<br>
-      AIが自動で、内容・予定日・担当者を読み取って整理します。<br>
-      画像やPDFは無しで、メモ欄に「明日の歯医者 16:00 持ち物：保険証」のようにテキストで入力してもOKです。
+      「予定・プリントを送る」ボタンから送信してください。<br>
+      <br>
+      📎 ファイル添付：画像・PDF・Word・Excel・PowerPoint（複数可）<br>
+      <br>
+      画像・PDFはAIが自動で内容・予定日・担当者を読み取って整理します。<br>
+      Word・Excel・PowerPointはメモ欄に概要を入力してください。<br>
+      ファイルなしで、メモ欄に「明日の歯医者 16:00 持ち物：保険証」のようにテキストだけでもOKです。
     </div>
   </div>
 
-</div>  
+</div>
 
 <script>
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
@@ -689,6 +705,10 @@
       const profile = await liff.getProfile();
       state.userId = profile.userId;
       state.userName = profile.displayName;
+
+      document.getElementById('video-drive-link').href = 
+        `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
+      
     } catch (err) {
       state.userId = 'unknown';
       state.userName = '名前未取得';
