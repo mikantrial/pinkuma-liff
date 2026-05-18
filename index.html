@@ -47,10 +47,12 @@
       transition: opacity 0.2s;
     }
     .top-btn:active { opacity: 0.7; }
-    .btn-album { background: #FFE0B2; color: #E65100; }
-    .btn-schedule { background: #BBDEFB; color: #1565C0; }
-    .btn-view { background: #C8E6C9; color: #1B5E20; }
     .top-btn .btn-icon { font-size: 24px; }
+
+    .btn-album { background: #FFE0B2; color: #E65100; }
+    .btn-album-view { background: #FFE0B2; color: #E65100; } /* ← オレンジ系に統一 */
+    .btn-schedule { background: #BBDEFB; color: #1565C0; }
+    .btn-view { background: #BBDEFB; color: #1565C0; }       /* ← ブルー系に統一 */
 
     /* 入力画面 */
     .screen-title {
@@ -251,7 +253,8 @@
         color: #4CAF50;
         text-decoration: none;
     }
-    .btn-log { background: #F3E5F5; color: #6A1B9A; }    
+    .btn-log { background: #F3E5F5; color: #6A1B9A; }
+    .btn-sub { background: #F5F0E8; color: #8D6E63; }
     /* 編集画面 */
     .edit-field {
       background: white;
@@ -293,7 +296,6 @@
       margin-top: 8px;
     }
     /* アルバム画面 */
-    .btn-album-view { background: #FCE4EC; color: #880E4F; }
     .photo-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr); /* ４列 */
@@ -454,26 +456,26 @@
   
   <!-- 下段2行目：プリント画像・動画・履歴・使い方 -->
   <div style="display:flex; gap:6px;">
-    <button class="top-btn"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E8F5E9; color:#1B5E20;"
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_SCHEDULE_FOLDER_ID}`, '_blank')">
       <span class="btn-icon" style="font-size:20px;">📄</span>
       <span style="font-size:10px;">プリント画像</span>
     </button>
-    <button class="top-btn"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E3F2FD; color:#1565C0;"
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`, '_blank')">
       <span class="btn-icon" style="font-size:20px;">🎥</span>
       <span style="font-size:10px;">動画のアップ</span>
     </button>
-    <button class="top-btn btn-log"
+    <button class="top-btn btn-sub"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showRecentPosts()">
       <span class="btn-icon" style="font-size:20px;">📋</span>
       <span style="font-size:10px;">送信履歴</span>
     </button>
-    <button class="top-btn"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#FFF9C4; color:#F57F17;"
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showScreen('howto')">
       <span class="btn-icon" style="font-size:20px;">❓</span>
       <span style="font-size:10px;">使い方</span>
