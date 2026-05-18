@@ -436,25 +436,29 @@
     </button>
   </div>
 
-  <!-- 下段1行目：予定確認・プリント画像・アルバム・動画 -->
+  <!-- 下段1行目：アルバム・予定確認 -->
   <div style="display:flex; gap:6px; margin-bottom:6px;">
+    <button class="top-btn btn-album-view"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="showAlbum()">
+      <span class="btn-icon" style="font-size:20px;">🖼️</span>
+      <span style="font-size:10px;">思い出アルバムを見る</span>
+    </button>
     <button class="top-btn btn-view"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showSchedule('week')">
       <span class="btn-icon" style="font-size:20px;">📅</span>
-      <span style="font-size:10px;">予定を確認</span>
+      <span style="font-size:10px;">予定を確認する</span>
     </button>
+  </div>
+  
+  <!-- 下段2行目：プリント画像・動画・履歴・使い方 -->
+  <div style="display:flex; gap:6px;">
     <button class="top-btn"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E8F5E9; color:#1B5E20;"
       onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_SCHEDULE_FOLDER_ID}`, '_blank')">
       <span class="btn-icon" style="font-size:20px;">📄</span>
       <span style="font-size:10px;">プリント画像</span>
-    </button>
-    <button class="top-btn btn-album-view"
-      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
-      onclick="showAlbum()">
-      <span class="btn-icon" style="font-size:20px;">🖼️</span>
-      <span style="font-size:10px;">アルバム</span>
     </button>
     <button class="top-btn"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#E3F2FD; color:#1565C0;"
@@ -462,17 +466,12 @@
       <span class="btn-icon" style="font-size:20px;">🎥</span>
       <span style="font-size:10px;">動画のアップ</span>
     </button>
-  </div>
-    
-  <!-- 下段2行目：履歴 -->
-  <div style="display:flex; gap:6px;">
     <button class="top-btn btn-log"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
       onclick="showRecentPosts()">
       <span class="btn-icon" style="font-size:20px;">📋</span>
       <span style="font-size:10px;">送信履歴</span>
     </button>
-    <div style="flex:3;"></div>
     <button class="top-btn"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#FFF9C4; color:#F57F17;"
       onclick="showScreen('howto')">
