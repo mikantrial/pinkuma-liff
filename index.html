@@ -408,6 +408,12 @@
       <span style="font-size:10px;">送信履歴</span>
     </button>
     <div style="flex:3;"></div>
+    <button class="top-btn"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px; background:#FFF9C4; color:#F57F17;"
+      onclick="showScreen('howto')">
+      <span class="btn-icon" style="font-size:20px;">❓</span>
+      <span style="font-size:10px;">使い方</span>
+    </button>
   </div>
   
 </div>
@@ -532,6 +538,40 @@
   </a>
   <!-- <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p> -->
 </div>
+
+<!-- 使い方画面 -->
+<div id="screen-howto" class="screen">
+  <div class="screen-title">❓ 使い方</div>
+
+  <div class="schedule-item" style="margin-bottom:8px;">
+    <div class="schedule-title">📷 思い出写真を送る</div>
+    <div class="schedule-content" style="margin-top:6px;">
+      「思い出写真を送る」ボタンから写真を選んで送信してください。
+      撮影日時を自動で取得してGoogleドライブに整理します。
+      メモ欄に説明を入力すると、AIがタイトルと説明文を自動で作成します。
+    </div>
+  </div>
+
+  <div class="schedule-item" style="margin-bottom:8px;">
+    <div class="schedule-title">📋 予定・プリントを送る</div>
+    <div class="schedule-content" style="margin-top:6px;">
+      「予定・プリントを送る」ボタンからプリントの写真やPDFを送信してください。
+      AIが自動で予定日・担当者・内容を読み取って整理します。
+      テキストで「明日の歯医者 16:00 持ち物：保険証」のように入力してもOKです。
+    </div>
+  </div>
+
+  <div class="schedule-item" style="margin-bottom:8px;">
+    <div class="schedule-title">🐻 ぴんくまさんへの話しかけ方</div>
+    <div class="schedule-content" style="margin-top:6px;">
+      LINEグループで「ぴんくまさん、〇〇」と話しかけてください。
+      予定の確認や雑談ができます。
+      例）「ぴんくまさん、今週の漢検の予定を教えて」
+      例）「ぴんくまさん、こんにちは」
+    </div>
+  </div>
+
+</div>  
 
 <script>
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
