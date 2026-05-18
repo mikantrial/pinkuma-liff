@@ -497,6 +497,14 @@
       multiple onchange="onFileSelected(this)">
     <div class="file-list" id="file-list"></div>
   </div>
+  <!-- 動画専用（albumのみ表示） -->
+  <div class="form-group" id="video-input-group" style="display:none;">
+    <label>動画添付（1個のみ・30MB以下）</label>
+    <label class="file-btn" for="video-input">🎥 動画を選ぶ</label>
+    <input type="file" id="video-input" accept="video/*"
+      onchange="onVideoSelected(this)">
+    <div id="video-file-list"></div>
+  </div>
   <div class="form-group">
     <label>メモ・説明（任意）<br>※Word・Excel・PowerPointは内容を読み取れないため、ここに概要を入力</label>
     <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
@@ -665,6 +673,7 @@
     userId: null,
     userName: null,
     files: [],
+    videoFile: null,
     editId: null,      // ← 追加
     editPeriod: 'week' // ← 追加（編集後に戻るタブを記憶）
   };
@@ -700,21 +709,22 @@
   function selectKind(kind) {
     state.kind = kind;
     state.files = [];
+    state.videoFile = null;
     document.getElementById('original-text').value = '';
     document.getElementById('file-list').innerHTML = '';
     document.getElementById('file-input').value = '';
+    document.getElementById('video-file-list').innerHTML = '';
+    document.getElementById('video-input').value = '';
+  
     if (kind === 'album') {
       document.getElementById('input-icon').textContent = '📷';
       document.getElementById('input-title-label').textContent = '思い出写真を送る';
+      document.getElementById('video-input-group').style.display = 'block';
     } else {
       document.getElementById('input-icon').textContent = '📋';
       document.getElementById('input-title-label').textContent = '予定・プリントを送る';
+      document.getElementById('video-input-group').style.display = 'none';
     }
-
-    // // albumのときだけ動画リンクを表示
-    // document.getElementById('video-link-group').style.display = 
-    //   kind === 'album' ? 'block' : 'none';
-    
     showScreen('input');
   }
 
@@ -748,73 +758,115 @@
     }
   }
 
-function onFileSelected(input) {
-  const newFiles = Array.from(input.files);
-
-  const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
-  const validFiles = newFiles.filter(f => !f.type.startsWith('video/'));
+  function onFileSelected(input) {
+    const newFiles = Array.from(input.files);
   
-  if (invalidFiles.length > 0) {
-    alert(`動画ファイル${invalidFiles.length}件は選択できません。\n画像ファイルのみ追加します。`);
-    input.value = '';
-    return;
-  }
+    const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
+    const validFiles = newFiles.filter(f => !f.type.startsWith('video/'));
+    
+    if (invalidFiles.length > 0) {
+      alert(`動画ファイル${invalidFiles.length}件は選択できません。\n画像ファイルのみ追加します。`);
+      input.value = '';
+      return;
+    }
+    
+    // newFiles.forEach(async file => {
+    //   // Exif情報から撮影日を取得（albumのみ）
+    //   let takenAt = null;
+    //   if (state.kind === 'album' && file.type.startsWith('image/')) {
+    //     try {
+    //       const exif = await exifr.parse(file);
+    //       if (exif && exif.DateTimeOriginal) {
+    //           const d = new Date(exif.DateTimeOriginal);
+    //           const yyyy = d.getFullYear();
+    //           const MM = String(d.getMonth()+1).padStart(2,'0');
+    //           const dd = String(d.getDate()).padStart(2,'0');
+    //           const hh = String(d.getHours()).padStart(2,'0');
+    //           const mm = String(d.getMinutes()).padStart(2,'0');
+    //           takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
+    //           // 例：「2026-02-23_1430」
+    //       }
+    //     } catch (err) {
+    //       // Exif取得失敗は無視
+    //     }
+    //   }
   
-  // newFiles.forEach(async file => {
-  //   // Exif情報から撮影日を取得（albumのみ）
-  //   let takenAt = null;
-  //   if (state.kind === 'album' && file.type.startsWith('image/')) {
-  //     try {
-  //       const exif = await exifr.parse(file);
-  //       if (exif && exif.DateTimeOriginal) {
-  //           const d = new Date(exif.DateTimeOriginal);
-  //           const yyyy = d.getFullYear();
-  //           const MM = String(d.getMonth()+1).padStart(2,'0');
-  //           const dd = String(d.getDate()).padStart(2,'0');
-  //           const hh = String(d.getHours()).padStart(2,'0');
-  //           const mm = String(d.getMinutes()).padStart(2,'0');
-  //           takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
-  //           // 例：「2026-02-23_1430」
-  //       }
-  //     } catch (err) {
-  //       // Exif取得失敗は無視
-  //     }
-  //   }
-
-  validFiles.forEach(async file => {
-    // Exif情報から撮影日を取得（albumのみ）
-    let takenAt = null;
-    if (state.kind === 'album' && file.type.startsWith('image/')) {
-      try {
-        const exif = await exifr.parse(file);
-        if (exif && exif.DateTimeOriginal) {
-          const d = new Date(exif.DateTimeOriginal);
-          const yyyy = d.getFullYear();
-          const MM = String(d.getMonth()+1).padStart(2,'0');
-          const dd = String(d.getDate()).padStart(2,'0');
-          const hh = String(d.getHours()).padStart(2,'0');
-          const mm = String(d.getMinutes()).padStart(2,'0');
-          takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`; // 例：「2026-02-23_1430」
+    validFiles.forEach(async file => {
+      // Exif情報から撮影日を取得（albumのみ）
+      let takenAt = null;
+      if (state.kind === 'album' && file.type.startsWith('image/')) {
+        try {
+          const exif = await exifr.parse(file);
+          if (exif && exif.DateTimeOriginal) {
+            const d = new Date(exif.DateTimeOriginal);
+            const yyyy = d.getFullYear();
+            const MM = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            const hh = String(d.getHours()).padStart(2,'0');
+            const mm = String(d.getMinutes()).padStart(2,'0');
+            takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`; // 例：「2026-02-23_1430」
+          }
+        } catch (err) {
+          // Exif取得失敗は無視
         }
-      } catch (err) {
-        // Exif取得失敗は無視
-      }
-    }    
+      }    
+  
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        state.files.push({
+          fileBase64: e.target.result,
+          fileName: file.name,
+          mimeType: file.type,
+          takenAt: takenAt // ← 追加（例：「2024-03」）
+        });
+        renderFileList();
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
 
+  //動画選択
+  const MAX_VIDEO_SIZE_MB = 30;
+  
+  function onVideoSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+  
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > MAX_VIDEO_SIZE_MB) {
+      alert(`動画ファイルが大きすぎます（${sizeMB.toFixed(1)}MB）。\n30MB以下の動画のみアップできます。\n大きい動画はGoogleドライブから直接アップしてください。`);
+      input.value = '';
+      state.videoFile = null;
+      document.getElementById('video-file-list').innerHTML = '';
+      return;
+    }
+  
     const reader = new FileReader();
     reader.onload = (e) => {
-      state.files.push({
+      state.videoFile = {
         fileBase64: e.target.result,
         fileName: file.name,
         mimeType: file.type,
-        takenAt: takenAt // ← 追加（例：「2024-03」）
-      });
-      renderFileList();
+        takenAt: null
+      };
+      document.getElementById('video-file-list').innerHTML = `
+        <div class="file-item">
+          <span class="file-item-name">🎥 ${file.name}（${sizeMB.toFixed(1)}MB）</span>
+          <button class="file-remove" onclick="removeVideo()">×</button>
+        </div>
+      `;
     };
     reader.readAsDataURL(file);
-  });
-  input.value = '';
-}
+    input.value = '';
+  }
+  
+  function removeVideo() {
+    state.videoFile = null;
+    document.getElementById('video-file-list').innerHTML = '';
+    document.getElementById('video-input').value = '';
+  }
+  
 
   function renderFileList() {
     const list = document.getElementById('file-list');
@@ -837,10 +889,14 @@ function onFileSelected(input) {
 
   async function submitFiles() {
     const originalText = document.getElementById('original-text').value;
-    if (!originalText && state.files.length === 0) {
+    if (!originalText && state.files.length === 0 && !state.videoFile) {
       alert('テキストかファイルのどちらかを入力してください');
       return;
     }
+  
+    const allFiles = [...state.files];
+    if (state.videoFile) allFiles.push(state.videoFile);
+  
     showScreen('loading');
     try {
       const res = await fetch(GAS_URL, {
@@ -850,7 +906,7 @@ function onFileSelected(input) {
           userId: state.userId,
           kind: state.kind,
           originalText: originalText,
-          files: state.files
+          files: allFiles
         })
       });
       const data = await res.json();
@@ -943,11 +999,14 @@ async function showRecentPosts() {
     list.innerHTML = '';
     data.posts.forEach(p => {
       const icon = p.kind === 'album' ? '📷' : '📅';
+      const isError = p.status && String(p.status).startsWith('error');
       const item = document.createElement('div');
       item.className = 'schedule-item';
       item.innerHTML = `
         <div class="schedule-date">${p.postedAt} ${p.userName}</div>
-        <div class="schedule-title">${icon}「${p.title}」を送信</div>
+        <div class="schedule-title" style="${isError ? 'color:#e53935;' : ''}">
+          ${isError ? '⚠️ 送信に失敗しました。もう一度お試しください。' : icon + '「' + p.title + '」を送信'}
+        </div>
       `;
       list.appendChild(item);
     });
