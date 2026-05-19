@@ -1121,6 +1121,9 @@ async function loadMorePhotos() {
           <div style="font-size:24px;">🎥</div>
           <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${p.title.substring(0,10)}</div>
         </div>
+        ${p.mimeType && p.mimeType.startsWith('video/') ? `
+        <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:2px 4px;font-size:10px;">🎥</div>
+        ` : ''}
         <div class="photo-overlay">
           <div class="photo-overlay-title">${p.title}</div>
         </div>
