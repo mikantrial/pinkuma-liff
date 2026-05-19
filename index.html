@@ -1103,14 +1103,10 @@ async function loadMorePhotos() {
     data.photos.forEach(p => {
       const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
                      p.fileUrl.match(/id=([^&]+)/)?.[1];
-      
-      // 動画かどうか判定
-      const isVideo = p.mimeType && p.mimeType.startsWith('video/');
-      
-      const thumbnailUrl = (!isVideo && fileId)
+      const thumbnailUrl = fileId 
         ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`
         : null;
-      const thumbnailUrlLarge = (!isVideo && fileId)
+      const thumbnailUrlLarge = fileId
         ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`
         : null;
     
@@ -1118,32 +1114,18 @@ async function loadMorePhotos() {
       item.className = 'photo-item';
       item.onclick = () => openAlbumPopup(p, thumbnailUrlLarge);
     
-      if (isVideo) {
-        // 動画の場合は🎥アイコンとタイトルを表示
-        item.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
-            <div style="font-size:24px;">🎥</div>
-            <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;overflow:hidden;">${p.title.substring(0,10)}</div>
-          </div>
-        `;
-      } else if (thumbnailUrl) {
-        item.innerHTML = `
-          <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy"
-            onerror="this.parentElement.innerHTML='<div style=\'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:20px;\'>📄<div style=\'font-size:9px;color:#aaa;margin-top:2px;\'>${p.title.substring(0,8)}</div></div>'">
-          <div class="photo-overlay">
-            <div class="photo-overlay-title">${p.title}</div>
-          </div>
-        `;
-      } else {
-        item.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:20px;">
-            📄
-            <div style="font-size:9px;color:#aaa;margin-top:2px;">${p.title.substring(0,8)}</div>
-          </div>
-        `;
-      }
+      item.innerHTML = `
+        <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
+          <div style="font-size:24px;">🎥</div>
+          <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${p.title.substring(0,10)}</div>
+        </div>
+        <div class="photo-overlay">
+          <div class="photo-overlay-title">${p.title}</div>
+        </div>
+      `;
       grid.appendChild(item);
-
     });
 
     albumOffset += data.photos.length;
@@ -1175,7 +1157,13 @@ document.getElementById('screen-album').addEventListener('scroll', () => {
 
 // ポップアップ用
 function openAlbumPopup(p, thumbnailUrlLarge) {
-  document.getElementById('album-popup-img').src = thumbnailUrlLarge || '';
+  const imgEl = document.getElementById('album-popup-img');
+  if (thumbnailUrlLarge) {
+    imgEl.src = thumbnailUrlLarge;
+    imgEl.style.display = 'block';
+  } else {
+    imgEl.style.display = 'none';
+  }
   document.getElementById('album-popup-title').textContent = p.title || '';
   document.getElementById('album-popup-content').textContent = p.content || '';
   document.getElementById('album-popup-link').href = p.fileUrl || '#';
