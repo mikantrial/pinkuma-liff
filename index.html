@@ -1116,7 +1116,7 @@ async function loadMorePhotos() {
     
       item.innerHTML = `
         <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy"
-          onerror="this.style.display='none';this.parentElement.querySelector('.no-thumb').style.display='flex';">
+          onerror="this.style.display='none';this.parentElement.querySelector('.no-thumb').style.display='flex';this.parentElement.dataset.noThumb='1';">
         <div class="no-thumb" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
           <div style="font-size:24px;">🎥</div>
           <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${p.title.substring(0,10)}</div>
@@ -1125,6 +1125,10 @@ async function loadMorePhotos() {
           <div class="photo-overlay-title">${p.title}</div>
         </div>
       `;
+      item.onclick = () => {
+        const noThumb = item.dataset.noThumb === '1';
+        openAlbumPopup(p, noThumb ? null : thumbnailUrlLarge);
+      };
       grid.appendChild(item);
     });
 
