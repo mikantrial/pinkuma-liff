@@ -951,7 +951,8 @@
 
   async function submitFiles() {
     const originalText = document.getElementById('original-text').value;
-    if (!originalText && state.files.length === 0 && !state.videoFile) {
+    const videoDriveUrl = document.getElementById('video-drive-url').value.trim();
+    if (!originalText && state.files.length === 0 && !state.videoFile && !videoDriveUrl) {
       alert('テキストかファイルのどちらかを入力してください');
       return;
     }
