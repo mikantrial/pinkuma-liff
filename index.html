@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-wgidth, initial-scale=1.0">
   <title>ぴんくまさん</title>
   <meta property="og:title" content="ぴんくまさん">
   <meta property="og:description" content="送るだけで自動整理するよ！">  
@@ -730,6 +730,7 @@
     userName: null,
     files: [],
     videoFile: null,
+    videoDriveUrl: null, // ← 追加
     editId: null,      // ← 追加
     editPeriod: 'week' // ← 追加（編集後に戻るタブを記憶）
   };
@@ -775,6 +776,7 @@
     document.getElementById('file-input').value = '';
     document.getElementById('video-file-list').innerHTML = '';
     document.getElementById('video-input').value = '';
+    document.getElementById('video-drive-url').value = ''; // ← 追加
   
     if (kind === 'album') {
       document.getElementById('input-icon').textContent = '📷';
@@ -966,7 +968,8 @@
           userId: state.userId,
           kind: state.kind,
           originalText: originalText,
-          files: allFiles
+          files: allFiles,
+          videoDriveUrl: videoDriveUrl || null // ← 追加
         })
       });
       const data = await res.json();
