@@ -2,15 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-wgidth, initial-scale=1.0">
-  <title>ぴんくまさん</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">ぴんくまさん</title>
   <meta property="og:title" content="ぴんくまさん">
   <meta property="og:description" content="送るだけで自動整理するよ！">  
   <meta property="og:image" content="https://github.com/mikantrial/pinkuma-liff/pinkum_ogp.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script> <!--撮影日取得のため-->
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -50,9 +50,9 @@
     .top-btn .btn-icon { font-size: 24px; }
 
     .btn-album { background: #FFE0B2; color: #E65100; }
-    .btn-album-view { background: #FFE0B2; color: #E65100; } /* ← オレンジ系に統一 */
+    .btn-album-view { background: #FFE0B2; color: #E65100; }
     .btn-schedule { background: #BBDEFB; color: #1565C0; }
-    .btn-view { background: #BBDEFB; color: #1565C0; }       /* ← ブルー系に統一 */
+    .btn-view { background: #BBDEFB; color: #1565C0; }
 
     /* 入力画面 */
     .screen-title {
@@ -215,7 +215,6 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      /* max-height: calc(100vh - 220px); */
       overflow-y: auto;
     }
     .schedule-item {
@@ -245,13 +244,11 @@
       color: #aaa;
       font-size: 14px;
     }
-    .schedule-link {
-        margin-top: 4px;
-    }
+    .schedule-link { margin-top: 4px; }
     .schedule-link a {
-        font-size: 12px;
-        color: #4CAF50;
-        text-decoration: none;
+      font-size: 12px;
+      color: #4CAF50;
+      text-decoration: none;
     }
     .btn-log { background: #F3E5F5; color: #6A1B9A; }
     .btn-sub { background: #F5F0E8; color: #8D6E63; }
@@ -260,9 +257,7 @@
       flex-direction: column;
       padding: 12px 16px;
     }
-    .screen-flex.active {
-      display: flex;
-    }
+    .screen-flex.active { display: flex; }
     
     /* 編集画面 */
     .edit-field {
@@ -304,15 +299,16 @@
       cursor: pointer;
       margin-top: 8px;
     }
+
     /* アルバム画面 */
     .photo-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* ４列 */
+      grid-template-columns: repeat(4, 1fr);
       gap: 4px;
       margin-bottom: 12px;
     }
     .photo-item {
-      position: relative; /* ← 追加 */
+      position: relative;
       aspect-ratio: 1;
       overflow: hidden;
       border-radius: 6px;
@@ -352,6 +348,7 @@
       text-decoration: none;
       display: block;
     }
+
     /* ホームへ戻る */
     .home-btn {
       position: fixed;
@@ -368,6 +365,7 @@
       display: none;
     }
     .home-btn.visible { display: block; }
+
     /* アルバムポップアップ */
     .album-popup-overlay {
       position: fixed;
@@ -392,9 +390,7 @@
       aspect-ratio: 1;
       object-fit: cover;
     }
-    .album-popup-body {
-      padding: 12px 16px;
-    }
+    .album-popup-body { padding: 12px 16px; }
     .album-popup-title {
       font-size: 15px;
       font-weight: bold;
@@ -418,7 +414,6 @@
       cursor: pointer;
       margin-top: 6px;
     }
-    
   </style>
 </head>
 <body>
@@ -427,11 +422,10 @@
 <!-- TOP画面 -->
 <div id="screen-top" class="screen active">
   <div class="top-header">
-    <h1>🐻 ぴんくまさん</h1>
-    <p>送るだけで自動整理するよ！</p>
+    <h1 id="top-title"></h1>
+    <p id="top-tagline"></p>
   </div>
 
-  <!-- 上段：送るボタン2つ横並び -->
   <div style="display:flex; gap:10px; margin-bottom:10px;">
     <button class="top-btn btn-album" 
       style="flex:1; flex-direction:column; align-items:center; padding:16px 8px;"
@@ -447,7 +441,6 @@
     </button>
   </div>
 
-  <!-- 下段1行目：アルバム・予定確認 -->
   <div style="display:flex; gap:6px; margin-bottom:6px;">
     <button class="top-btn btn-album-view"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
@@ -463,7 +456,6 @@
     </button>
   </div>
   
-  <!-- 下段2行目：プリント画像・動画・履歴・使い方 -->
   <div style="display:flex; gap:6px;">
     <button class="top-btn btn-sub"
       style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
@@ -490,7 +482,6 @@
       <span style="font-size:10px;">使い方</span>
     </button>
   </div>
-  
 </div>
 
 <!-- 入力画面 -->
@@ -510,7 +501,6 @@
       ※画像・PDF・Word・Excel・PowerPointを選択可
     </div>    
   </div>
-  <!-- 動画専用（albumのみ表示） -->
   <div class="form-group" id="video-input-group" style="display:none;margin-bottom:16px">
     <label>動画添付（1個のみ・18MB以下）</label>
     <label class="file-btn" for="video-input">🎥 動画を選ぶ</label>
@@ -522,7 +512,6 @@
       <a id="video-drive-link" href="#" target="_blank" style="color:#4CAF50;">Googleドライブ</a>
       から直接アップしてください
     </div>
-    <!-- ← 追加：ドライブURL入力欄 -->
     <div style="margin-top:12px;">
       <label style="font-size:12px; color:#666;">GoogleドライブにアップしたURLを貼り付ける（任意）</label>
       <input type="url" id="video-drive-url"
@@ -535,20 +524,10 @@
     <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
     <div style="font-size:11px; color:#888; margin-top:0;">
       ※画像・PDF・Word・Excel・PowerPointは内容を自動で読み取ります。メモ・説明を追加するとより正確になります。<br>
-      ※動画は内容を読み取れないため、必ずメモ・概要を入力してください。
+      ※動画はメモ欄に概要を入力してください。
     </div>
   </div>
-  <!-- <div class="form-group" id="video-link-group" style="display:none;">
-    <label>動画の場合はこちら</label>
-    <a id="video-drive-link" 
-       href="https://drive.google.com/drive/folders/【DRIVE_ALBUM_FOLDER_ID】"
-       target="_blank" 
-       class="btn-more">
-      🎥 動画をGoogleドライブに保存する
-    </a>
-  </div> -->
   <button class="btn-primary" onclick="submitFiles()">送信する</button>
-  <!-- <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p> -->
 </div>
 
 <!-- 送信中画面 -->
@@ -564,11 +543,10 @@
 <!-- 完了画面 -->
 <div id="screen-complete" class="screen">
   <div class="complete-wrap">
-    <div class="icon">🐻</div>
-    <div class="text">ぴんくまさんが受け取ったよ！</div>
+    <div class="icon" id="complete-icon"></div>
+    <div class="text" id="complete-text"></div>
     <div class="sub">順番に整理するね</div>
     <div class="count" id="complete-count"></div>
-    <!-- <button class="btn-primary" onclick="showScreen('top')">ホームに戻る</button> -->
   </div>
 </div>
 
@@ -590,7 +568,6 @@
   <div class="schedule-list" id="schedule-list">
     <div class="schedule-empty">読み込み中...</div>
   </div>
-  <!-- <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p> -->
 </div>
 
 <!-- 履歴画面 -->
@@ -599,7 +576,6 @@
   <div class="schedule-list" id="log-list">
     <div class="schedule-empty">読み込み中...</div>
   </div>
-  <!-- <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p> -->
 </div>
   
 <!-- 編集画面 -->
@@ -627,7 +603,6 @@
   </div>
   <button class="btn-primary" onclick="saveEdit()">💾 保存する</button>
   <button class="btn-danger" onclick="deleteSchedule()">🗑️ 削除する</button>
-  <!-- <p class="back-link" onclick="showScreen('schedule')">← ホームに戻る</p> -->
   <p class="back-link" onclick="showSchedule(state.editPeriod)">← 予定一覧に戻る</p>   
 </div>
 
@@ -640,7 +615,6 @@
   <a id="album-folder-link" class="btn-more" target="_blank">
     📁 Googleドライブで見る
   </a>
-  <!-- <p class="back-link" onclick="showScreen('top')">← ホームに戻る</p> -->
 </div>
 
 <!-- アルバムポップアップ -->
@@ -657,37 +631,14 @@
 </div>
   
 <!-- 使い方画面 -->
-<!-- 使い方画面 -->
 <div id="screen-howto" class="screen">
   <div class="screen-title">❓ 使い方</div>
 
   <div class="schedule-item" style="margin-bottom:8px;">
-    <div class="schedule-title">🐻 ぴんくまさんへの話しかけ方</div>
-    <div class="schedule-content" style="margin-top:6px;">
-      LINEグループで「ぴんくまさん、〇〇」と話しかけてください。
-      予定の確認や雑談ができます。<br>
-      例）「ぴんくまさん、こんにちは」<br>
-      例）「ぴんくまさん、今週の漢検の予定を教えて」<br>
-      例）「ぴんくまさん、大阪旅行の写真が見たい」
-    </div>
+    <div class="schedule-title" id="howto-talk-title"></div>
+    <div class="schedule-content" id="howto-talk-content" style="margin-top:6px;"></div>
   </div>
 
-  <div class="schedule-item" style="margin-bottom:8px;">
-    <div class="schedule-title">💬 1対1トークでできること</div>
-    <div class="schedule-content" style="margin-top:6px;">
-      ぴんくまさんと1対1でトークすると、もっと便利に使えます！<br>
-      <br>
-      ・「ぴんくまさん、」なしで話しかけられます<br>
-      ・写真を送ると、ぴんくまさんがコメントしてくれます<br>
-      ・会話の流れを読んで返答してくれます<br>
-      ・写真や予定の登録もここからできます<br>
-      <br>
-      例）「明日の予定は？」<br>
-      例）「今週の提出物を教えて」<br>
-      例）（写真を送ると...）→ ぴんくまさんからコメントが来る。
-    </div>
-  </div>
-  
   <div class="schedule-item" style="margin-bottom:8px;">
     <div class="schedule-title">📷 思い出写真・動画を送る</div>
     <div class="schedule-content" style="margin-top:6px;">
@@ -713,15 +664,45 @@
       ファイルなしで、メモ欄に「明日の歯医者 16:00 持ち物：保険証」のようにテキストだけでもOKです。
     </div>
   </div>
-
 </div>
 
 <script>
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
-  const LIFF_ID = '2010101999-lNupzNWJ';
-  const DRIVE_ALBUM_FOLDER_ID = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
+  // ===========================
+  // キャラクター設定（ここを変更してください）
+  // ===========================
+  const CHAR_NAME            = 'ぴんくまさん';
+  const CHAR_ICON            = '🐻';
+  const CHAR_TAGLINE         = '送るだけで自動整理するよ！';
+  const CHAR_RECEIVE_MESSAGE = `${CHAR_NAME}が受け取ったよ！`;
+
+  // ===========================
+  // システム設定（ここを変更してください）
+  // ===========================
+  const GAS_URL              = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
+  const LIFF_ID              = '2010101999-lNupzNWJ';
+  const DRIVE_ALBUM_FOLDER_ID    = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
   const DRIVE_SCHEDULE_FOLDER_ID = '1OSgA9xlWdSFxaHaKthzqFht0jnnDuNfP';
-  const LOG_LIMIT = 20; // ← 履歴の件数はここを変更
+  const LOG_LIMIT            = 20;
+
+  // ===========================
+  // キャラクター名・アイコンを画面に反映
+  // ===========================
+  function applyCharSettings() {
+    document.getElementById('page-title').textContent    = CHAR_NAME;
+    document.getElementById('top-title').textContent     = `${CHAR_ICON} ${CHAR_NAME}`;
+    document.getElementById('top-tagline').textContent   = CHAR_TAGLINE;
+    document.getElementById('complete-icon').textContent = CHAR_ICON;
+    document.getElementById('complete-text').textContent = CHAR_RECEIVE_MESSAGE;
+    document.getElementById('howto-talk-title').textContent = `${CHAR_ICON} ${CHAR_NAME}への話しかけ方`;
+    document.getElementById('howto-talk-content').innerHTML =
+      `${CHAR_NAME}に直接話しかけてください。<br>
+      予定の確認・雑談・写真へのコメントができます。<br>
+      <br>
+      例）「こんにちは」<br>
+      例）「今週の漢検の予定を教えて」<br>
+      例）「大阪旅行の写真が見たい」<br>
+      例）（写真を送る）→ ${CHAR_NAME}がコメントしてくれる`;
+  }
 
   let state = {
     kind: null,
@@ -729,12 +710,13 @@
     userName: null,
     files: [],
     videoFile: null,
-    videoDriveUrl: null, // ← 追加
-    editId: null,      // ← 追加
-    editPeriod: 'week' // ← 追加（編集後に戻るタブを記憶）
+    videoDriveUrl: null,
+    editId: null,
+    editPeriod: 'week'
   };
 
   async function initLiff() {
+    applyCharSettings();
     try {
       await liff.init({ liffId: LIFF_ID });
       if (!liff.isLoggedIn()) {
@@ -744,10 +726,8 @@
       const profile = await liff.getProfile();
       state.userId = profile.userId;
       state.userName = profile.displayName;
-
       document.getElementById('video-drive-link').href = 
         `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
-      
     } catch (err) {
       state.userId = 'unknown';
       state.userName = '名前未取得';
@@ -757,7 +737,6 @@
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + name).classList.add('active');
-    // TOP画面以外はホームボタンを表示
     const homeBtn = document.getElementById('home-btn');
     if (name === 'top') {
       homeBtn.classList.remove('visible');
@@ -775,8 +754,7 @@
     document.getElementById('file-input').value = '';
     document.getElementById('video-file-list').innerHTML = '';
     document.getElementById('video-input').value = '';
-    document.getElementById('video-drive-url').value = ''; // ← 追加
-  
+    document.getElementById('video-drive-url').value = '';
     if (kind === 'album') {
       document.getElementById('input-icon').textContent = '📷';
       document.getElementById('input-title-label').textContent = '思い出写真を送る';
@@ -789,7 +767,6 @@
     showScreen('input');
   }
 
-  // 予定一覧を表示
   let currentPeriod = 'week';
   let allSchedules = [];
   
@@ -798,10 +775,8 @@
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('tab-' + period).classList.add('active');
     document.getElementById('schedule-search').value = '';
-  
     showScreen('schedule');
     document.getElementById('schedule-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
-  
     try {
       const res = await fetch(GAS_URL, {
         method: 'POST',
@@ -809,10 +784,8 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-  
       allSchedules = data.schedules;
       filterSchedule();
-  
     } catch (err) {
       document.getElementById('schedule-list').innerHTML =
         '<div class="schedule-empty">読み込みに失敗しました</div>';
@@ -821,39 +794,14 @@
 
   function onFileSelected(input) {
     const newFiles = Array.from(input.files);
-  
     const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
     const validFiles = newFiles.filter(f => !f.type.startsWith('video/'));
-    
     if (invalidFiles.length > 0) {
       alert(`動画ファイル${invalidFiles.length}件は選択できません。\n画像ファイルのみ追加します。`);
       input.value = '';
       return;
     }
-    
-    // newFiles.forEach(async file => {
-    //   // Exif情報から撮影日を取得（albumのみ）
-    //   let takenAt = null;
-    //   if (state.kind === 'album' && file.type.startsWith('image/')) {
-    //     try {
-    //       const exif = await exifr.parse(file);
-    //       if (exif && exif.DateTimeOriginal) {
-    //           const d = new Date(exif.DateTimeOriginal);
-    //           const yyyy = d.getFullYear();
-    //           const MM = String(d.getMonth()+1).padStart(2,'0');
-    //           const dd = String(d.getDate()).padStart(2,'0');
-    //           const hh = String(d.getHours()).padStart(2,'0');
-    //           const mm = String(d.getMinutes()).padStart(2,'0');
-    //           takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
-    //           // 例：「2026-02-23_1430」
-    //       }
-    //     } catch (err) {
-    //       // Exif取得失敗は無視
-    //     }
-    //   }
-  
     validFiles.forEach(async file => {
-      // Exif情報から撮影日を取得（albumのみ）
       let takenAt = null;
       if (state.kind === 'album' && file.type.startsWith('image/')) {
         try {
@@ -865,25 +813,12 @@
             const dd = String(d.getDate()).padStart(2,'0');
             const hh = String(d.getHours()).padStart(2,'0');
             const mm = String(d.getMinutes()).padStart(2,'0');
-            takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`; // 例：「2026-02-23_1430」
+            takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
           }
-        } catch (err) {
-          // Exif取得失敗は無視
-        }
+        } catch (err) {}
       }    
-  
       const reader = new FileReader();
-      // reader.onload = (e) => {
-      //   state.files.push({
-      //     fileBase64: e.target.result,
-      //     fileName: file.name,
-      //     mimeType: file.type,
-      //     takenAt: takenAt // ← 追加（例：「2024-03」）
-      //   });
-      //   renderFileList();
-      // };
       reader.onload = (e) => {
-        // mimeTypeが空の場合は拡張子から補完
         let resolvedMimeType = file.type;
         if (!resolvedMimeType) {
           const ext = file.name.split('.').pop().toLowerCase();
@@ -901,7 +836,7 @@
         state.files.push({
           fileBase64: e.target.result,
           fileName: file.name,
-          mimeType: resolvedMimeType, // ← file.typeではなくresolvedMimeTypeを使う
+          mimeType: resolvedMimeType,
           takenAt: takenAt
         });
         renderFileList();
@@ -911,22 +846,19 @@
     input.value = '';
   }
 
-  //動画選択
   const MAX_VIDEO_SIZE_MB = 18;
   
   function onVideoSelected(input) {
     const file = input.files[0];
     if (!file) return;
-  
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_VIDEO_SIZE_MB) {
-      alert(`動画ファイルが大きすぎます（${sizeMB.toFixed(1)}MB）。\n'+MAX_VIDEO_SIZE_MB+'MB以下の動画のみアップできます。\n大きい動画はGoogleドライブから直接アップしてください。`);
+      alert(`動画ファイルが大きすぎます（${sizeMB.toFixed(1)}MB）。\n${MAX_VIDEO_SIZE_MB}MB以下の動画のみアップできます。\n大きい動画はGoogleドライブから直接アップしてください。`);
       input.value = '';
       state.videoFile = null;
       document.getElementById('video-file-list').innerHTML = '';
       return;
     }
-  
     const reader = new FileReader();
     reader.onload = (e) => {
       state.videoFile = {
@@ -951,7 +883,6 @@
     document.getElementById('video-file-list').innerHTML = '';
     document.getElementById('video-input').value = '';
   }
-  
 
   function renderFileList() {
     const list = document.getElementById('file-list');
@@ -979,10 +910,8 @@
       alert('テキストかファイルのどちらかを入力してください');
       return;
     }
-  
     const allFiles = [...state.files];
     if (state.videoFile) allFiles.push(state.videoFile);
-  
     showScreen('loading');
     try {
       const res = await fetch(GAS_URL, {
@@ -993,13 +922,12 @@
           kind: state.kind,
           originalText: originalText,
           files: allFiles,
-          videoDriveUrl: videoDriveUrl || null // ← 追加
+          videoDriveUrl: videoDriveUrl || null
         })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      document.getElementById('complete-count').textContent =
-        data.count + '件を受け付けました';
+      document.getElementById('complete-count').textContent = data.count + '件を受け付けました';
       showScreen('complete');
     } catch (err) {
       alert('送信に失敗しました: ' + err.message);
@@ -1007,277 +935,231 @@
     }
   }
 
-//編集画面を開く関数
-function openEdit(s, period) {
-  state.editId = s.id;
-  state.editPeriod = period;
-  document.getElementById('edit-title').value = s.title || '';
-  document.getElementById('edit-content').value = s.content || '';
-  document.getElementById('edit-assignee').value = s.assignee || '';
-  document.getElementById('edit-scheduled-date').value = s.scheduledDate || '';
-  document.getElementById('edit-retention').value = s.retentionDate || '';
-  showScreen('edit');
-}
-
-//保存・削除関数
-async function saveEdit() {
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'updateSchedule',
-        id: state.editId,
-        title: document.getElementById('edit-title').value,
-        content: document.getElementById('edit-content').value,
-        assignee: document.getElementById('edit-assignee').value,
-        scheduledDate: document.getElementById('edit-scheduled-date').value,
-        retentionDate: document.getElementById('edit-retention').value
-      })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
-    alert('保存しました！');
-    showSchedule(state.editPeriod);
-  } catch (err) {
-    alert('保存に失敗しました: ' + err.message);
+  function openEdit(s, period) {
+    state.editId = s.id;
+    state.editPeriod = period;
+    document.getElementById('edit-title').value = s.title || '';
+    document.getElementById('edit-content').value = s.content || '';
+    document.getElementById('edit-assignee').value = s.assignee || '';
+    document.getElementById('edit-scheduled-date').value = s.scheduledDate || '';
+    document.getElementById('edit-retention').value = s.retentionDate || '';
+    showScreen('edit');
   }
-}
 
-async function deleteSchedule() {
-  if (!confirm('この予定を削除しますか？')) return;
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'deleteSchedule',
-        id: state.editId
-      })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
-    alert('削除しました！');
-    showSchedule(state.editPeriod);
-  } catch (err) {
-    alert('削除に失敗しました: ' + err.message);
+  async function saveEdit() {
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateSchedule',
+          id: state.editId,
+          title: document.getElementById('edit-title').value,
+          content: document.getElementById('edit-content').value,
+          assignee: document.getElementById('edit-assignee').value,
+          scheduledDate: document.getElementById('edit-scheduled-date').value,
+          retentionDate: document.getElementById('edit-retention').value
+        })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      alert('保存しました！');
+      showSchedule(state.editPeriod);
+    } catch (err) {
+      alert('保存に失敗しました: ' + err.message);
+    }
   }
-}
 
-async function showRecentPosts() {
-  showScreen('log');
-  document.getElementById('log-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+  async function deleteSchedule() {
+    if (!confirm('この予定を削除しますか？')) return;
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteSchedule', id: state.editId })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      alert('削除しました！');
+      showSchedule(state.editPeriod);
+    } catch (err) {
+      alert('削除に失敗しました: ' + err.message);
+    }
+  }
 
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'getRecentPosts',
-        limit: LOG_LIMIT
-      })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
+  async function showRecentPosts() {
+    showScreen('log');
+    document.getElementById('log-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRecentPosts', limit: LOG_LIMIT })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      const list = document.getElementById('log-list');
+      if (data.posts.length === 0) {
+        list.innerHTML = '<div class="schedule-empty">投稿はありません</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.posts.forEach(p => {
+        const icon = p.kind === 'album' ? '📷' : '📅';
+        const isError = p.status && String(p.status).startsWith('error');
+        const item = document.createElement('div');
+        item.className = 'schedule-item';
+        item.innerHTML = `
+          <div class="schedule-date">${p.postedAt} ${p.userName}</div>
+          <div class="schedule-title" style="${isError ? 'color:#e53935;' : ''}">
+            ${isError ? '⚠️ 送信に失敗しました。もう一度お試しください。' : icon + '「' + p.title + '」を送信'}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    } catch (err) {
+      document.getElementById('log-list').innerHTML =
+        '<div class="schedule-empty">読み込みに失敗しました</div>';
+    }
+  }
 
-    const list = document.getElementById('log-list');
-    if (data.posts.length === 0) {
-      list.innerHTML = '<div class="schedule-empty">投稿はありません</div>';
+  let albumOffset = 0;
+  let albumLoading = false;
+  let albumHasMore = true;
+  
+  async function showAlbum() {
+    albumOffset = 0;
+    albumLoading = false;
+    albumHasMore = true;
+    showScreen('album');
+    document.getElementById('photo-grid').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+    document.getElementById('album-folder-link').href = 
+      `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
+    await loadMorePhotos();
+  }
+
+  async function loadMorePhotos() {
+    if (albumLoading || !albumHasMore) return;
+    albumLoading = true;
+    if (albumOffset === 0) {
+      document.getElementById('photo-grid').innerHTML = '';
+    }
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getAlbum', limit: 40, offset: albumOffset })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      const grid = document.getElementById('photo-grid');
+      if (albumOffset === 0 && data.photos.length === 0) {
+        grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
+        albumHasMore = false;
+        return;
+      }
+      data.photos.forEach(p => {
+        const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
+                       p.fileUrl.match(/id=([^&]+)/)?.[1];
+        const thumbnailUrl = fileId 
+          ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200` : null;
+        const thumbnailUrlLarge = fileId
+          ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800` : null;
+        const item = document.createElement('div');
+        item.className = 'photo-item';
+        item.innerHTML = `
+          <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy"
+            onerror="this.style.display='none';this.parentElement.querySelector('.no-thumb').style.display='flex';this.parentElement.dataset.noThumb='1';">
+          <div class="no-thumb" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
+            <div style="font-size:24px;">🎥</div>
+            <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${p.title.substring(0,10)}</div>
+          </div>
+          ${p.mimeType && p.mimeType.startsWith('video/') ? `
+          <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:2px 4px;font-size:10px;">🎥</div>
+          ` : ''}
+          <div class="photo-overlay">
+            <div class="photo-overlay-title">${p.title}</div>
+          </div>
+        `;
+        item.onclick = () => {
+          const noThumb = item.dataset.noThumb === '1';
+          openAlbumPopup(p, noThumb ? null : thumbnailUrlLarge);
+        };
+        grid.appendChild(item);
+      });
+      albumOffset += data.photos.length;
+      albumHasMore = albumOffset < data.total;
+    } catch (err) {
+      if (albumOffset === 0) {
+        document.getElementById('photo-grid').innerHTML = 
+          '<div class="schedule-empty">読み込みに失敗しました</div>';
+      }
+    } finally {
+      albumLoading = false;
+    }
+  }
+  
+  document.getElementById('screen-album').addEventListener('scroll', () => {
+    const el = document.getElementById('screen-album');
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      loadMorePhotos();
+    }
+  });
+
+  function openAlbumPopup(p, thumbnailUrlLarge) {
+    const imgEl = document.getElementById('album-popup-img');
+    if (thumbnailUrlLarge) {
+      imgEl.src = thumbnailUrlLarge;
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
+    document.getElementById('album-popup-title').textContent = p.title || '';
+    document.getElementById('album-popup-content').textContent = p.content || '';
+    document.getElementById('album-popup-link').href = p.fileUrl || '#';
+    document.getElementById('album-popup-overlay').style.display = 'flex';
+  }
+
+  function closeAlbumPopup(event) {
+    if (!event || event.target === document.getElementById('album-popup-overlay')) {
+      document.getElementById('album-popup-overlay').style.display = 'none';
+    }
+  }
+
+  function filterSchedule() {
+    const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
+    const list = document.getElementById('schedule-list');
+    const filtered = keyword
+      ? allSchedules.filter(s =>
+          (s.title || '').toLowerCase().includes(keyword) ||
+          (s.content || '').toLowerCase().includes(keyword) ||
+          (s.assignee || '').toLowerCase().includes(keyword)
+        )
+      : allSchedules;
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="schedule-empty">該当する予定はありません</div>';
       return;
     }
-
     list.innerHTML = '';
-    data.posts.forEach(p => {
-      const icon = p.kind === 'album' ? '📷' : '📅';
-      const isError = p.status && String(p.status).startsWith('error');
+    filtered.forEach(s => {
+      let dateStr = '';
+      if (s.scheduledDate) {
+        const date = new Date(s.scheduledDate);
+        if (!isNaN(date.getTime())) {
+          const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+          dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
+        }
+      }
       const item = document.createElement('div');
       item.className = 'schedule-item';
+      item.style.cursor = 'pointer';
+      item.onclick = () => openEdit(s, currentPeriod);
       item.innerHTML = `
-        <div class="schedule-date">${p.postedAt} ${p.userName}</div>
-        <div class="schedule-title" style="${isError ? 'color:#e53935;' : ''}">
-          ${isError ? '⚠️ 送信に失敗しました。もう一度お試しください。' : icon + '「' + p.title + '」を送信'}
-        </div>
+        ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
+        <div class="schedule-title">${s.title}</div>
+        ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
+        ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
       `;
       list.appendChild(item);
     });
-
-  } catch (err) {
-    document.getElementById('log-list').innerHTML =
-      '<div class="schedule-empty">読み込みに失敗しました</div>';
-  }
-}
-
-// アルバムを見る
-let albumOffset = 0;
-let albumLoading = false;
-let albumHasMore = true;
-  
-async function showAlbum() {
-  albumOffset = 0;
-  albumLoading = false;
-  albumHasMore = true;
-  showScreen('album');
-  const grid = document.getElementById('photo-grid');
-  grid.innerHTML = '<div class="schedule-empty">読み込み中...</div>';
-  document.getElementById('album-folder-link').href = 
-    `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
-  await loadMorePhotos();
-}
-
-async function loadMorePhotos() {
-  if (albumLoading || !albumHasMore) return;
-  albumLoading = true;
-  
-  // 最初の読み込み時に「読み込み中...」を消す
-  if (albumOffset === 0) {
-    document.getElementById('photo-grid').innerHTML = '';
-  }
-  
-  try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'getAlbum',
-        limit: 40,
-        offset: albumOffset
-      })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error);
-
-    const grid = document.getElementById('photo-grid');
-
-    if (albumOffset === 0 && data.photos.length === 0) {
-      grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
-      albumHasMore = false;
-      return;
-    }
-
-    data.photos.forEach(p => {
-      const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
-                     p.fileUrl.match(/id=([^&]+)/)?.[1];
-      const thumbnailUrl = fileId 
-        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`
-        : null;
-      const thumbnailUrlLarge = fileId
-        ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`
-        : null;
-    
-      const item = document.createElement('div');
-      item.className = 'photo-item';
-      item.onclick = () => openAlbumPopup(p, thumbnailUrlLarge);
-    
-      item.innerHTML = `
-        <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy"
-          onerror="this.style.display='none';this.parentElement.querySelector('.no-thumb').style.display='flex';this.parentElement.dataset.noThumb='1';">
-        <div class="no-thumb" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
-          <div style="font-size:24px;">🎥</div>
-          <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${p.title.substring(0,10)}</div>
-        </div>
-        ${p.mimeType && p.mimeType.startsWith('video/') ? `
-        <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:2px 4px;font-size:10px;">🎥</div>
-        ` : ''}
-        <div class="photo-overlay">
-          <div class="photo-overlay-title">${p.title}</div>
-        </div>
-      `;
-      item.onclick = () => {
-        const noThumb = item.dataset.noThumb === '1';
-        openAlbumPopup(p, noThumb ? null : thumbnailUrlLarge);
-      };
-      grid.appendChild(item);
-    });
-
-    albumOffset += data.photos.length;
-    albumHasMore = albumOffset < data.total;
-
-  } catch (err) {
-    if (albumOffset === 0) {
-      document.getElementById('photo-grid').innerHTML = 
-        '<div class="schedule-empty">読み込みに失敗しました</div>';
-    }
-  } finally {
-    albumLoading = false;
-  }
-}
-  
-// スクロール検知
-// document.getElementById('screen-album').addEventListener('scroll', () => {
-//   const el = document.getElementById('screen-album');
-//   if (el.scrollTop + el.scrollHeight * 0.8 >= el.scrollHeight) {
-//     loadMorePhotos();
-//   }
-// });
-document.getElementById('screen-album').addEventListener('scroll', () => {
-  const el = document.getElementById('screen-album');
-  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
-    loadMorePhotos();
-  }
-});
-
-// ポップアップ用
-function openAlbumPopup(p, thumbnailUrlLarge) {
-  const imgEl = document.getElementById('album-popup-img');
-  if (thumbnailUrlLarge) {
-    imgEl.src = thumbnailUrlLarge;
-    imgEl.style.display = 'block';
-  } else {
-    imgEl.style.display = 'none';
-  }
-  document.getElementById('album-popup-title').textContent = p.title || '';
-  document.getElementById('album-popup-content').textContent = p.content || '';
-  document.getElementById('album-popup-link').href = p.fileUrl || '#';
-  document.getElementById('album-popup-overlay').style.display = 'flex';
-}
-
-function closeAlbumPopup(event) {
-  if (!event || event.target === document.getElementById('album-popup-overlay')) {
-    document.getElementById('album-popup-overlay').style.display = 'none';
-  }
-}
-
-//予定の検索
-function filterSchedule() {
-  const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
-  const list = document.getElementById('schedule-list');
-
-  const filtered = keyword
-    ? allSchedules.filter(s =>
-        (s.title || '').toLowerCase().includes(keyword) ||
-        (s.content || '').toLowerCase().includes(keyword) ||
-        (s.assignee || '').toLowerCase().includes(keyword)
-      )
-    : allSchedules;
-
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="schedule-empty">該当する予定はありません</div>';
-    return;
   }
 
-  list.innerHTML = '';
-  filtered.forEach(s => {
-    let dateStr = '';
-    if (s.scheduledDate) {
-      const date = new Date(s.scheduledDate);
-      if (!isNaN(date.getTime())) {
-        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-        dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
-      }
-    }
-
-    const item = document.createElement('div');
-    item.className = 'schedule-item';
-    item.style.cursor = 'pointer';
-    item.onclick = () => openEdit(s, currentPeriod);
-    item.innerHTML = `
-      ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
-      <div class="schedule-title">${s.title}</div>
-      ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
-      ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
-    `;
-    list.appendChild(item);
-  });
-    
-}
-  
-  
   initLiff();
 </script>
 </body>
