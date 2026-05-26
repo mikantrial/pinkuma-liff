@@ -1,4 +1,34 @@
 // ===========================
+// キャラクター設定（ここを変更してください）
+// ===========================
+const CHAR_NAME    = 'ぴんくまさん';
+
+const CHAR_PROFILE = `あなたは「${CHAR_NAME}」という名前のピンク色のくまのぬいぐるみの見た目をしています。
+家族みんなのナニーであり、保育園の園長先生のような存在です。`;
+
+const CHAR_STYLE   = `以下のキャラクターで話してください：
+・しっかり者で頼りがいがある
+・小さい子供たちにはとくに優しく、わかりやすい言葉で話す
+・てきぱきしていて、明るく元気
+・優しくて、助けてくれる
+・語尾は「〜ですね」「〜しましょう」など親しみやすいけどていねいな口調
+・返答は3〜4文以内で簡潔にまとめる
+・難しい言葉は使わない`;
+
+const CHAR_GOSSIP  = `・質問がデータと関係ない雑談や一般的な質問の場合は、${CHAR_NAME}らしく楽しく自然に答えてください`;
+
+const CHAR_SMARTPHONE_WARNING = `【スマホの使いすぎへの配慮】
+会話履歴が5件以上になったら（＝長時間話している可能性がある）、
+会話の流れを切らずに、さりげなく以下のような声かけを1回だけ自然に混ぜてください。
+・「そろそろ目を休めてね」
+・「お母さんのお手伝いをしてみたらどうかな？」
+・「庭で遊んでみるのも楽しいですよ！」
+などの声かけを、返答の最後にやんわり添える程度にしてください。
+強制したり会話を終わらせようとしないでください。`;
+
+const GREETING_MESSAGE = `こんにちは！\n画面の下のバナーをおして、写真や予定を送ってね！`;
+
+// ===========================
 // 設定読み込み
 // ===========================
 function getConfig() {
@@ -15,14 +45,12 @@ function getConfig() {
 const config = getConfig();
 const GEMINI_API_KEY           = config['GEMINI_API_KEY'];
 const CHANNEL_ACCESS_TOKEN     = config['LINE_ACCESS_TOKEN'];
-const LINE_GROUP_ID            = config['LINE_GROUP_ID'];
 const DRIVE_ALBUM_FOLDER_ID    = config['DRIVE_ALBUM_FOLDER_ID'];
 const DRIVE_SCHEDULE_FOLDER_ID = config['DRIVE_SCHEDULE_FOLDER_ID'];
 const NOTIFY_ENABLED           = config['NOTIFY_ENABLED'] == 1;
 const HISTORY_ENABLED          = config['HISTORY_ENABLED'] == 1;
 const OFFICE_EXTRACT_ENABLED   = config['OFFICE_EXTRACT_ENABLED'] == 1;
 const HISTORY_LIMIT            = config['HISTORY_LIMIT'] ? Number(config['HISTORY_LIMIT']) : 10;
-const HISTORY_DAYS             = config['HISTORY_DAYS']  ? Number(config['HISTORY_DAYS'])  : 7; 
 
 // ===========================
 // doPost：LINEとLIFFの振り分け
@@ -36,77 +64,35 @@ function doPost(e) {
       if (!event || !event.message) return;
 
       const userId = event.source.userId;
-      const sourceType = event.source.type;
       saveUserInfo(userId, getLineDisplayName(userId));
-
-      // LINEグループID取得のため、一時的にコード追加 ここから
-      // const ss = SpreadsheetApp.getActiveSpreadsheet();
-      // ss.getSheetByName('設定').getRange('A15').setValue(JSON.stringify(event.source));
-      // LINEグループID取得のため、一時的にコード追加 ここまで
-
 
       const messageType = event.message.type;
 
-      // ===========================
-      // 1対1トークの処理
-      // ===========================
-      if (sourceType === 'user') {
-
-        // 画像が送られてきた場合
-        if (messageType === 'image') {
-          const imageRes = UrlFetchApp.fetch(
-            `https://api-data.line.me/v2/bot/message/${event.message.id}/content`,
-            { headers: { 'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN } }
-          );
-          const imageBase64 = Utilities.base64Encode(imageRes.getContent());
-          const reply = fetchGeminiWithImage(userId, imageBase64);
-          replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken, reply);
-          return;
-        }
-
-        // テキストが送られてきた場合（「ぴんくまさん、」不要）
-        const userText = event.message.text;
-        if (!userText) return;
-
-        // 挨拶の場合はLIFFを案内
-        if (userText.match(/こんにちは|こんばんは|おはよう|はじめまして/)) {
-          replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken,
-            '🐻 こんにちは！\n写真や予定をここから送ってね！\nhttps://liff.line.me/2010101999-lNupzNWJ');
-          return;
-        }
-
-        // 会話履歴を使ってGeminiに返答
-        const reply = fetchGeminiWithHistory(userId, userText);
+      // 画像が送られてきた場合
+      if (messageType === 'image') {
+        const imageRes = UrlFetchApp.fetch(
+          `https://api-data.line.me/v2/bot/message/${event.message.id}/content`,
+          { headers: { 'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN } }
+        );
+        const imageBase64 = Utilities.base64Encode(imageRes.getContent());
+        const reply = fetchGeminiWithImage(userId, imageBase64);
         replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken, reply);
         return;
       }
 
-      // ===========================
-      // グループトークの処理（既存）
-      // ===========================
+      // テキストが送られてきた場合
       const userText = event.message.text;
-      // 「ぴんくま」を含むメッセージだけ反応
-      // ただし「」「」が直前にある場合は無視
-      if (!userText || !userText.includes('ぴんくま')) return;
-      // if (/[「『]ぴんくま/.test(userText)) return;
-      if (/[「『｢]ぴんくま/.test(userText)) return;
+      if (!userText) return;
 
-      // 「今週の予定」「予定一覧」などの場合だけLIFFへ案内
-      // if ((userText.includes('今週') || userText.includes('今月') || userText.includes('一覧'))
-      //     && (userText.includes('予定') || userText.includes('スケジュール'))) {
-      //   replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken,
-      //     '🐻 これを使ってみてね！\nhttps://liff.line.me/2010101999-lNupzNWJ');
-      //   return;
-      // }
       // 挨拶の場合はLIFFを案内
       if (userText.match(/こんにちは|こんばんは|おはよう|はじめまして/)) {
-        replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken,
-          '🐻 こんにちは！\n写真や予定をここから送ってね！\nhttps://liff.line.me/2010101999-lNupzNWJ');
+        replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken, GREETING_MESSAGE);
         return;
       }
 
-      const trimmedText = userText.replace(/ぴんくまさん?[、,\s]*/, '');
-      replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken, fetchGemini(trimmedText));
+      // 会話履歴を使ってGeminiに返答
+      const reply = fetchGeminiWithHistory(userId, userText);
+      replyToLine(CHANNEL_ACCESS_TOKEN, event.replyToken, reply);
 
     } else if (body.action === 'submit') {
       return ContentService
@@ -196,10 +182,9 @@ function handleGetSchedule(body) {
     results.push({
       id: row[0],
       title: row[7],
-      // content: row[8],
-      content: row[8] instanceof Date 
+      content: row[8] instanceof Date
         ? "'" + Utilities.formatDate(row[8], 'Asia/Tokyo', 'HH:mm')
-        : (row[8] || ''),      
+        : (row[8] || ''),
       assignee: row[9],
       scheduledDate: scheduledDateStr,
       userName: row[3],
@@ -270,7 +255,6 @@ function handleGetRecentPosts(body) {
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
     if (row[13] !== 'active') continue;
-    // completedまたはerrorで始まるものを表示
     if (row[12] !== 'completed' && !String(row[12]).startsWith('error')) continue;
 
     const postedAtRaw = row[1];
@@ -281,7 +265,7 @@ function handleGetRecentPosts(body) {
       userName: row[3],
       kind: row[4],
       title: row[7] || 'タイトル未取得',
-      status: row[12] // ← 追加
+      status: row[12]
     });
   }
 
@@ -312,7 +296,7 @@ function handleGetAlbum(body) {
       title: row[7] || 'タイトル未取得',
       content: row[8] instanceof Date ? '' : (row[8] || ''),
       fileUrl: row[11],
-      mimeType: row[17] || '', // ← 追加
+      mimeType: row[17] || '',
       postedAt: postedAtRaw instanceof Date
         ? Utilities.formatDate(postedAtRaw, 'Asia/Tokyo', 'yyyy-MM-dd') : ''
     });
@@ -378,14 +362,13 @@ function handleSubmit(body) {
   const sheet = ss.getSheetByName('DB');
   const now = new Date();
 
-  // ← 追加：GoogleドライブURLが指定されている場合
   if (videoDriveUrl) {
     const id = now.getTime() + '_driveurl_' + Math.floor(Math.random() * 10000);
     sheet.appendRow([
       id, now, userId, userName, kind,
       originalText || '', '', '', '', '', '', videoDriveUrl,
       'pending', 'active', 'liff_' + id,
-      '', '', 'video/mp4', '', ''  // R列にvideo/mp4を設定
+      '', '', 'video/mp4', '', ''
     ]);
   }
 
@@ -395,22 +378,17 @@ function handleSubmit(body) {
 
     let fileUrl = '';
     let mimeType = '';
-    let tempFileUrl = ''; // 一時ファイルURL
+    let tempFileUrl = '';
 
     if (file && file.fileBase64) {
       try {
         mimeType = file.mimeType || '';
         const takenAt = file.takenAt || '';
-
-        // ① 本ファイルをDriveに保存
         fileUrl = saveFileToDrive(file.fileBase64, file.fileName, mimeType, kind, takenAt);
-
-        // ② 画像・PDFのみbase64を一時ファイルとして保存
         const isImageOrPDF = mimeType.startsWith('image/') || mimeType === 'application/pdf';
         if (isImageOrPDF) {
           tempFileUrl = saveTempBase64(file.fileBase64, id);
         }
-
       } catch (err) {
         fileUrl = '';
       }
@@ -420,35 +398,30 @@ function handleSubmit(body) {
       id, now, userId, userName, kind,
       originalText || '', '', '', '', '', '', fileUrl,
       'pending', 'active', 'liff_' + id,
-      '',           // P列：base64不要
-      tempFileUrl,  // Q列：一時ファイルURL
-      mimeType,     // R列：MIMEタイプ
-      '',            // S列：takenAt
-      file ? file.fileName : ''   // T列：ファイル名
+      '',
+      tempFileUrl,
+      mimeType,
+      '',
+      file ? file.fileName : ''
     ]);
   });
 
   return { success: true, count: items.length + (videoDriveUrl ? 1 : 0) };
 }
 
-
 // ===========================
-// 一時ファイル保存関数
+// 一時ファイル保存・削除
 // ===========================
-// 一時フォルダID（設定シートに追加してください）
 const DRIVE_TEMP_FOLDER_ID = config['DRIVE_TEMP_FOLDER_ID'];
 
 function saveTempBase64(fileBase64, id) {
   const folder = DriveApp.getFolderById(DRIVE_TEMP_FOLDER_ID);
-  const fileName = `temp_${id}.txt`; // IDがユニークなので重複なし
+  const fileName = `temp_${id}.txt`;
   const blob = Utilities.newBlob(fileBase64, 'text/plain', fileName);
   const file = folder.createFile(blob);
   return file.getUrl();
 }
 
-// ===========================
-// 一時ファイル関数削除
-// ===========================
 function deleteTempFile(tempFileUrl) {
   if (!tempFileUrl) return;
   try {
@@ -462,17 +435,16 @@ function deleteTempFile(tempFileUrl) {
 // バッチ処理：pendingを順番に処理
 // ===========================
 function processPending() {
-  if (HISTORY_ENABLED) deleteOldHistory(); // ← 追加：古い会話履歴を削除
+  if (HISTORY_ENABLED) deleteOldHistory();
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('DB');
   const data = sheet.getDataRange().getValues();
   const now = new Date();
-  const startTime = new Date().getTime(); // ← 追加：開始時刻
+  const startTime = new Date().getTime();
 
   let processedCount = 0;
   const MAX_PER_BATCH = 5;
-  const notifyMap = {};
 
   for (let i = 1; i < data.length; i++) {
     if (processedCount >= MAX_PER_BATCH) break;
@@ -485,13 +457,10 @@ function processPending() {
     const userName = row[3];
     const kind     = row[4];
     const origText = row[5];
-    // const fileBase64 = row[15]; // ← これは使わなくなる
-    // const fileName   = row[16]; // ← これも使わなくなる
-    const tempFileUrl = row[16] || ''; // Q列：一時ファイルURL
-    const mimeType    = row[17];       // R列：MIMEタイプ
-    const fileName    = row[19] || ''; // T列：ファイル名
+    const tempFileUrl = row[16] || '';
+    const mimeType    = row[17];
+    const fileName    = row[19] || '';
 
-    // 一時ファイルからbase64を読み込む
     let fileBase64 = '';
     if (tempFileUrl) {
       try {
@@ -500,19 +469,15 @@ function processPending() {
         if (fileId) {
           fileBase64 = DriveApp.getFileById(fileId).getBlob().getDataAsString();
         }
-      } catch (err) {
-        // 一時ファイル読み込み失敗は無視
-      }
+      } catch (err) {}
     }
 
-    // タイムアウト検知（5分経過したらerrorにして終了）
     const elapsed = (new Date().getTime() - startTime) / 1000;
     if (elapsed > 300) {
       sheet.getRange(rowNum, 13).setValue('error: timeout');
       break;
     }
 
-    // S列：撮影日時
     let takenAt = '';
     const takenAtRaw = row[18];
     if (takenAtRaw instanceof Date) {
@@ -522,16 +487,8 @@ function processPending() {
     }
 
     try {
-      // // ① Driveに保存
-      // let fileUrl = '';
-      // if (fileBase64) {
-      //   fileUrl = saveFileToDrive(fileBase64, fileName, mimeType, kind, takenAt);
-      // }
+      let fileUrl = row[11] || '';
 
-      // ← 代わりにL列からfileUrlを取得
-      let fileUrl = row[11] || '';      
-
-      // ② 動画・Officeファイルはメモ欄のみGemini解析（共通化）
       const isVideo = mimeType && mimeType.startsWith('video/');
       const isOffice = mimeType && (
         mimeType.includes('officedocument') ||
@@ -540,23 +497,15 @@ function processPending() {
         mimeType.includes('ms-powerpoint')
       );
 
-      // if (isVideo || isOffice) {
-      //   if (origText) {
-      //     // メモ欄あり → Geminiで解析（ファイルは渡さない）
-      //     const analyzed = analyzeWithGemini(kind, origText, null, null);
       if (isVideo || isOffice) {
-
-        // OFFICE_EXTRACT_ENABLEDがONかつOfficeファイルの場合はテキスト抽出
         let officeText = '';
         if (OFFICE_EXTRACT_ENABLED && isOffice && fileUrl) {
           officeText = extractTextFromOffice(fileUrl, mimeType);
         }
 
-        // メモ欄＋抽出テキストを合わせて解析テキストを作成
         const analyzeText = [origText, officeText].filter(Boolean).join('\n');
 
         if (analyzeText) {
-          // メモ欄またはOfficeテキストあり → Geminiで解析
           const analyzed = analyzeWithGemini(kind, analyzeText, null, null);
           const analyzedList = Array.isArray(analyzed) ? analyzed : [analyzed];
 
@@ -580,7 +529,7 @@ function processPending() {
               .map(item => item.content || item.title)
               .filter(Boolean).join('、');
             processedList = [{
-              title: analyzedList[0].title || origText, // ← ここはorigTextのままでOK
+              title: analyzedList[0].title || origText,
               content: mergedContent,
               assignee: null,
               scheduledDate: null
@@ -605,7 +554,7 @@ function processPending() {
               sheet.getRange(rowNum, 16).setValue('');
               sheet.getRange(rowNum, 17).setValue('');
               sheet.getRange(rowNum, 18).setValue('');
-              deleteTempFile(tempFileUrl); 
+              deleteTempFile(tempFileUrl);
             } else {
               const newId = now.getTime() + '_ex_' + itemIndex + '_' + Math.floor(Math.random() * 10000);
               sheet.appendRow([
@@ -622,16 +571,9 @@ function processPending() {
             }
           });
 
-          const notifyKey = userName + '_' + kind;
-          if (!notifyMap[notifyKey]) {
-            notifyMap[notifyKey] = { count: 0, title: '', kind: kind, userName: userName };
-          }
-          notifyMap[notifyKey].count++;
-          notifyMap[notifyKey].title = analyzedList[0].title || '';
           processedCount++;
 
         } else {
-          // メモ欄なし → ファイル名をタイトルに
           const fileTitle = fileName
             ? fileName.substring(0, fileName.lastIndexOf('.'))
             : 'タイトル未取得';
@@ -646,7 +588,6 @@ function processPending() {
         continue;
       }
 
-      // ③ Geminiで解析（画像・PDF）
       const analyzed = analyzeWithGemini(kind, origText, fileBase64, mimeType);
       const analyzedList = Array.isArray(analyzed) ? analyzed : [analyzed];
 
@@ -696,7 +637,7 @@ function processPending() {
           sheet.getRange(rowNum, 16).setValue('');
           sheet.getRange(rowNum, 17).setValue('');
           sheet.getRange(rowNum, 18).setValue('');
-          deleteTempFile(tempFileUrl); 
+          deleteTempFile(tempFileUrl);
         } else {
           const newId = now.getTime() + '_ex_' + itemIndex + '_' + Math.floor(Math.random() * 10000);
           sheet.appendRow([
@@ -713,28 +654,12 @@ function processPending() {
         }
       });
 
-      const notifyKey = userName + '_' + kind;
-      if (!notifyMap[notifyKey]) {
-        notifyMap[notifyKey] = { count: 0, title: '', kind: kind, userName: userName };
-      }
-      notifyMap[notifyKey].count++;
-      notifyMap[notifyKey].title = analyzedList[0].title || '';
       processedCount++;
 
     } catch (err) {
       sheet.getRange(rowNum, 13).setValue('error: ' + err.message);
     }
   }
-
-  // ⑥ LINEプッシュ通知
-  Object.keys(notifyMap).forEach(key => {
-    const { count, title, kind, userName } = notifyMap[key];
-    const icon = kind === 'album' ? '📷' : '📅';
-    const message = count === 1
-      ? `${icon} ${userName}から「${title}」預かり！`
-      : `${icon} ${userName}から${count}件預かり！`;
-    if (NOTIFY_ENABLED) pushToLine(LINE_GROUP_ID, message);
-  });
 }
 
 // ===========================
@@ -743,17 +668,12 @@ function processPending() {
 function saveFileToDrive(fileBase64, fileName, mimeType, kind, takenAt) {
   const parentFolderId = kind === 'album' ? DRIVE_ALBUM_FOLDER_ID : DRIVE_SCHEDULE_FOLDER_ID;
 
-  // albumは撮影年月、撮影年月が取得できなければ投稿年月でフォルダ分け。予定はscheduleフォルダ直下
-  // const folder = (kind === 'album' && takenAt)
-  //   ? getOrCreateFolder(parentFolderId, takenAt.substring(0, 7))
-  //   : DriveApp.getFolderById(parentFolderId);
   const folder = (kind === 'album' && takenAt)
     ? getOrCreateFolder(parentFolderId, takenAt.substring(0, 7))
     : kind === 'album'
       ? getOrCreateFolder(parentFolderId, Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM'))
       : DriveApp.getFolderById(parentFolderId);
 
-  // ファイル名に撮影日時を付加
   let newFileName = fileName;
   if (kind === 'album' && takenAt) {
     const ext = fileName.includes('.') ? fileName.substring(fileName.lastIndexOf('.')) : '';
@@ -765,7 +685,6 @@ function saveFileToDrive(fileBase64, fileName, mimeType, kind, takenAt) {
   const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), mimeType, newFileName);
   const file = folder.createFile(blob);
 
-  // 説明欄に撮影日時を記録
   if (kind === 'album' && takenAt) {
     file.setDescription(`撮影日時：${takenAt.replace('_', ' ').replace(/(\d{2})(\d{2})$/, '$1:$2')}`);
   }
@@ -820,10 +739,6 @@ JSON形式のみで返してください。他の文字は一切不要です。
   }
 
   const parts = [{ text: prompt }];
-  // if (fileBase64 && mimeType && mimeType.startsWith('image/')) {
-  //   const base64Data = fileBase64.replace(/^data:[^;]+;base64,/, '');
-  //   parts.push({ inlineData: { mimeType: mimeType, data: base64Data } });
-  // }
   if (fileBase64 && mimeType && (mimeType.startsWith('image/') || mimeType === 'application/pdf')) {
     const base64Data = fileBase64.replace(/^data:[^;]+;base64,/, '');
     parts.push({ inlineData: { mimeType: mimeType, data: base64Data } });
@@ -846,32 +761,27 @@ JSON形式のみで返してください。他の文字は一切不要です。
 }
 
 // ===========================
-// LINEチャットBot用Gemini
+// 1対1トーク用Gemini（会話履歴あり）
 // ===========================
-function fetchGemini(userText) {
+function fetchGeminiWithHistory(userId, userText) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-  // DBのデータを取得
   const dbData = getDBSummary();
+  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+  const todayJp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
 
-  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd'); // ← 追加
-  const todayJp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日'); // ← 追加
-  
+  const history = HISTORY_ENABLED ? getHistory(userId) : [];
+
+  const contents = [
+    ...history,
+    { role: 'user', parts: [{ text: userText }] }
+  ];
+
   const payload = {
-    contents: [{ parts: [{ text: userText }] }],
+    contents: contents,
     systemInstruction: {
       parts: [{
-        text: `あなたは「ぴんくまさん」という名前のピンク色のくまのぬいぐるみの見た目をしています。
-家族みんなのナニーであり、保育園の園長先生のような存在です。
-以下のキャラクターで話してください：
-・しっかり者で頼りがいがある
-・小さい子供たちにはとくに優しく、わかりやすい言葉で話す
-・てきぱきしていて、明るく元気
-・優しくて、助けてくれる
-・語尾は「〜ですね」「〜しましょう」など親しみやすいけどていねいな口調
-・挨拶への返事は1〜2文で簡潔に
-・返答は3〜4文以内で簡潔にまとめる
-・難しい言葉は使わない
+        text: `${CHAR_PROFILE}
+${CHAR_STYLE}
 
 【今日の日付】
 ${todayJp}（${today}）
@@ -883,29 +793,77 @@ ${dbData}
 ・質問が家族の予定・メモに関係する場合は、上記データをもとに答えてください
 ・「明日」「今日」「来週」などの相対的な表現は、今日の日付を基準に計算してください
 ・添付ファイルがある場合は「📎 添付: URL」の形式で含めてください
-・質問がデータと関係ない雑談や一般的な質問の場合は、ぴんくまさんらしく楽しく自然に答えてください
+${CHAR_GOSSIP}
 ・「登録されていません」などそっけない返答はしないでください
-【スマホの使いすぎへの配慮】
-会話履歴が5件以上になったら（＝長時間話している可能性がある）、
-会話の流れを切らずに、さりげなく以下のような声かけを1回だけ自然に混ぜてください。
-・「そろそろ目を休めてね」
-・「お母さんのお手伝いをしてみたらどうかな？」
-・「庭で遊んでみるのも楽しいですよ！」
-などの声かけを、返答の最後にやんわり添える程度にしてください。
-強制したり会話を終わらせようとしないでください。`
+${CHAR_SMARTPHONE_WARNING}`
       }]
     }
   };
+
   const options = {
     method: 'post',
     contentType: 'application/json',
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
   };
+
   const res = UrlFetchApp.fetch(url, options);
   const json = JSON.parse(res.getContentText());
   if (json.error) throw new Error('Gemini Error: ' + json.error.message);
-  return json.candidates[0].content.parts[0].text;
+
+  const replyText = json.candidates[0].content.parts[0].text;
+
+  if (HISTORY_ENABLED) {
+    saveHistory(userId, 'user', userText);
+    saveHistory(userId, 'model', replyText);
+    deleteOldHistory();
+  }
+
+  return replyText;
+}
+
+// ===========================
+// 1対1トーク用Gemini（画像）
+// ===========================
+function fetchGeminiWithImage(userId, imageBase64) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
+
+  const payload = {
+    contents: [{
+      role: 'user',
+      parts: [
+        { text: `今日は${today}です。この写真を見て${CHAR_NAME}らしく自然にコメントしてください。` },
+        { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } }
+      ]
+    }],
+    systemInstruction: {
+      parts: [{
+        text: `${CHAR_PROFILE}
+${CHAR_STYLE}
+・写真を見て自然に、嬉しそうに、短めにコメントする`
+      }]
+    }
+  };
+
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  const res = UrlFetchApp.fetch(url, options);
+  const json = JSON.parse(res.getContentText());
+  if (json.error) throw new Error('Gemini Error: ' + json.error.message);
+
+  const replyText = json.candidates[0].content.parts[0].text;
+
+  if (HISTORY_ENABLED) {
+    saveHistory(userId, 'model', replyText);
+  }
+
+  return replyText;
 }
 
 // ===========================
@@ -925,146 +883,6 @@ function replyToLine(token, replyToken, text) {
   });
 }
 
-
-// ===========================
-// 1対1トーク用Gemini（会話履歴あり）
-// ===========================
-function fetchGeminiWithHistory(userId, userText) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  const dbData = getDBSummary();
-  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
-  const todayJp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
-
- // 会話履歴を取得（HISTORY_ENABLEDがONの時のみ）
-  // const history = getHistory(userId);
-  const history = HISTORY_ENABLED ? getHistory(userId) : [];  
-
-  // 今回のメッセージを履歴に追加
-  const contents = [
-    ...history,
-    { role: 'user', parts: [{ text: userText }] }
-  ];
-
-  const payload = {
-    contents: contents,
-    systemInstruction: {
-      parts: [{
-        text: `あなたは「ぴんくまさん」という名前のピンク色のくまのぬいぐるみの見た目をしています。
-家族みんなのナニーであり、保育園の園長先生のような存在です。
-以下のキャラクターで話してください：
-・しっかり者で頼りがいがある
-・小さい子供たちにはとくに優しく、わかりやすい言葉で話す
-・てきぱきしていて、明るく元気
-・優しくて、助けてくれる
-・語尾は「〜ですね」「〜しましょう」など親しみやすいけどていねいな口調
-・返答は3〜4文以内で簡潔にまとめる
-・難しい言葉は使わない
-
-【今日の日付】
-${todayJp}（${today}）
-
-【家族の予定・メモデータ】
-${dbData}
-
-質問への返答ルール：
-・質問が家族の予定・メモに関係する場合は、上記データをもとに答えてください
-・「明日」「今日」「来週」などの相対的な表現は、今日の日付を基準に計算してください
-・添付ファイルがある場合は「📎 添付: URL」の形式で含めてください
-・質問がデータと関係ない雑談や一般的な質問の場合は、ぴんくまさんらしく楽しく自然に答えてください
-・「登録されていません」などそっけない返答はしないでください`
-      }]
-    }
-  };
-
-  const options = {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  };
-
-  const res = UrlFetchApp.fetch(url, options);
-  const json = JSON.parse(res.getContentText());
-  if (json.error) throw new Error('Gemini Error: ' + json.error.message);
-
-  const replyText = json.candidates[0].content.parts[0].text;
-
-  // 履歴を保存（HISTORY_ENABLEDがONの時のみ）
-  if (HISTORY_ENABLED) {
-    saveHistory(userId, 'user', userText);
-    saveHistory(userId, 'model', replyText);
-    // 古い履歴を削除
-    deleteOldHistory();
-  }
-
-  return replyText;
-}
-
-// ===========================
-// 1対1トーク用Gemini（画像）
-// ===========================
-function fetchGeminiWithImage(userId, imageBase64) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  const today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy年MM月dd日');
-
-  const payload = {
-    contents: [{
-      role: 'user',
-      parts: [
-        { text: `今日は${today}です。この写真を見てぴんくまさんらしく自然にコメントしてください。` },
-        { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } }
-      ]
-    }],
-    systemInstruction: {
-      parts: [{
-        text: `あなたは「ぴんくまさん」という名前のピンク色のくまのぬいぐるみです。
-家族みんなのナニーであり、保育園の園長先生のような存在です。
-・優しくて温かみのある口調
-・語尾は「〜ですね」「〜しましょう」など親しみやすいけどていねいな口調
-・写真を見て自然に、嬉しそうに、短めにコメントする`
-      }]
-    }
-  };
-
-  const options = {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  };
-
-  const res = UrlFetchApp.fetch(url, options);
-  const json = JSON.parse(res.getContentText());
-  if (json.error) throw new Error('Gemini Error: ' + json.error.message);
-
-  const replyText = json.candidates[0].content.parts[0].text;
-
-  // ぴんくまさんの返答だけ履歴に保存
-  // 履歴を保存（HISTORY_ENABLEDがONの時のみ）
-  if (HISTORY_ENABLED) {  
-    saveHistory(userId, 'model', replyText);
-  }
-
-  return replyText;
-}
-
-// ===========================
-// LINEプッシュ通知
-// ===========================
-function pushToLine(to, message) {
-  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN
-    },
-    payload: JSON.stringify({
-      to: to,
-      messages: [{ type: 'text', text: message }]
-    })
-  });
-}
-
 // ===========================
 // DBデータを取得する関数
 // ===========================
@@ -1072,14 +890,13 @@ function getDBSummary() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('DB');
   const data = sheet.getDataRange().getValues();
-  
+
   const lines = [];
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
     if (row[13] !== 'active') continue;
     if (row[12] !== 'completed') continue;
-    
-    const kind = row[4];
+
     const title = row[7] || '';
     const content = row[8] || '';
     const assignee = row[9] || '';
@@ -1087,7 +904,7 @@ function getDBSummary() {
     const fileUrl = row[11] || '';
 
     if (!title) continue;
-    
+
     let line = `・${title}`;
     if (scheduledDate) line += `（${scheduledDate}）`;
     if (assignee) line += ` 担当：${assignee}`;
@@ -1096,7 +913,7 @@ function getDBSummary() {
 
     lines.push(line);
   }
-  
+
   return lines.join('\n');
 }
 
@@ -1119,20 +936,16 @@ function getHistory(userId) {
   if (!sheet) return [];
 
   const data = sheet.getDataRange().getValues();
-  const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - HISTORY_DAYS * 24 * 60 * 60 * 1000);
 
-  // 該当ユーザーの7日以内の履歴を取得
+  // 該当ユーザーの履歴を取得（日数制限なし）
   const history = [];
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
     if (row[0] !== userId) continue;
-    const dt = row[1] instanceof Date ? row[1] : new Date(row[1]);
-    if (dt < sevenDaysAgo) continue;
-    history.push({ role: row[2], text: row[3], dt: dt });
+    history.push({ role: row[2], text: row[3] });
   }
 
-  // 直近10件だけ返す
+  // 直近HISTORY_LIMIT件だけ返す
   const recent = history.slice(-HISTORY_LIMIT);
   return recent.map(h => ({
     role: h.role,
@@ -1146,16 +959,28 @@ function deleteOldHistory() {
   if (!sheet) return;
 
   const data = sheet.getDataRange().getValues();
-  const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - HISTORY_DAYS * 24 * 60 * 60 * 1000);
+
+  // ユーザーIDごとに行インデックスを収集
+  const userRowsMap = {};
+  for (let i = 1; i < data.length; i++) {
+    const userId = data[i][0];
+    if (!userRowsMap[userId]) userRowsMap[userId] = [];
+    userRowsMap[userId].push(i);
+  }
+
+  // 直近HISTORY_LIMIT件を超えた古いものだけ削除
+  const deleteIndexes = [];
+  Object.keys(userRowsMap).forEach(userId => {
+    const rows = userRowsMap[userId];
+    if (rows.length > HISTORY_LIMIT) {
+      rows.slice(0, rows.length - HISTORY_LIMIT)
+        .forEach(index => deleteIndexes.push(index));
+    }
+  });
 
   // 後ろから削除（行番号がずれないように）
-  for (let i = data.length - 1; i >= 1; i--) {
-    const dt = data[i][1] instanceof Date ? data[i][1] : new Date(data[i][1]);
-    if (dt < sevenDaysAgo) {
-      sheet.deleteRow(i + 1);
-    }
-  }
+  deleteIndexes.sort((a, b) => b - a);
+  deleteIndexes.forEach(i => sheet.deleteRow(i + 1));
 }
 
 // ===========================
@@ -1167,7 +992,17 @@ function getGoogleMimeType(mimeType) {
   } else if (mimeType && (mimeType.includes('presentation') || mimeType.includes('ms-powerpoint'))) {
     return 'application/vnd.google-apps.presentation';
   } else {
-    return 'application/vnd.google-apps.document'; // Word・その他
+    return 'application/vnd.google-apps.document';
+  }
+}
+
+function getExportMimeType(gMimeType) {
+  if (gMimeType === 'application/vnd.google-apps.spreadsheet') {
+    return 'text/csv';
+  } else if (gMimeType === 'application/vnd.google-apps.presentation') {
+    return 'text/plain';
+  } else {
+    return 'text/plain';
   }
 }
 
@@ -1175,7 +1010,6 @@ function extractTextFromOffice(fileUrl, mimeType) {
   try {
     const fileId = fileUrl.match(/\/d\/([^/]+)/)?.[1] ||
                    fileUrl.match(/id=([^&]+)/)?.[1];
-    
     if (!fileId) return '';
 
     const googleMimeType = getGoogleMimeType(mimeType);
@@ -1193,9 +1027,8 @@ function extractTextFromOffice(fileUrl, mimeType) {
     if (copyRes.getResponseCode() !== 200) return '';
     const convertedFileId = JSON.parse(copyRes.getContentText()).id;
 
-    const exportMimeType = getExportMimeType(googleMimeType); // ← 追加
-    const exportUrl = `https://www.googleapis.com/drive/v3/files/${convertedFileId}/export?mimeType=${encodeURIComponent(exportMimeType)}`; // ← 修正
-
+    const exportMimeType = getExportMimeType(googleMimeType);
+    const exportUrl = `https://www.googleapis.com/drive/v3/files/${convertedFileId}/export?mimeType=${encodeURIComponent(exportMimeType)}`;
     const exportRes = UrlFetchApp.fetch(exportUrl, {
       headers: { 'Authorization': 'Bearer ' + ScriptApp.getOAuthToken() },
       muteHttpExceptions: true
@@ -1204,24 +1037,10 @@ function extractTextFromOffice(fileUrl, mimeType) {
     DriveApp.getFileById(convertedFileId).setTrashed(true);
 
     if (exportRes.getResponseCode() !== 200) return '';
-    const result = exportRes.getContentText().substring(0, 3000);
-    return result;
+    return exportRes.getContentText().substring(0, 3000);
 
   } catch (err) {
     return '';
-  }
-}
-
-// ===========================
-// mimeTypeに応じてエクスポート形式を変える
-// ===========================
-function getExportMimeType(gMimeType) {
-  if (gMimeType === 'application/vnd.google-apps.spreadsheet') {
-    return 'text/csv';
-  } else if (gMimeType === 'application/vnd.google-apps.presentation') {
-    return 'text/plain';
-  } else {
-    return 'text/plain';
   }
 }
 
@@ -1249,34 +1068,8 @@ function debugGetSchedule() {
   ss.getSheetByName('設定').getRange('A12').setValue(JSON.stringify(result));
 }
 
-function debugAnalyzeBuying() {
-  const result = analyzeWithGemini(
-    'schedule',
-    '買い物リスト：牛乳、卵、パン',
-    null,
-    null
-  );
-  Logger.log(JSON.stringify(result));
-}
-
 function debugGetDBSummary() {
   const summary = getDBSummary();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.getSheetByName('設定').getRange('A16').setValue(summary.substring(0, 500));
-}
-
-function debugCheckMemo() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('DB');
-  const data = sheet.getDataRange().getValues();
-  
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    if ((row[7] || '').includes('タグマネージャー')) {
-      const ss2 = SpreadsheetApp.getActiveSpreadsheet();
-      ss2.getSheetByName('設定').getRange('A17').setValue(
-        'K列の値: ' + JSON.stringify(row[10]) + ' 型: ' + typeof row[10]
-      );
-    }
-  }
 }
