@@ -620,11 +620,18 @@
 <!-- アルバムポップアップ -->
 <div id="album-popup-overlay" class="album-popup-overlay" style="display:none;" onclick="closeAlbumPopup(event)">
   <div class="album-popup">
-    <img id="album-popup-img" class="album-popup-img" src="" alt="">
+    <div style="position:relative;">
+      <img id="album-popup-img" class="album-popup-img" src="" alt="">
+      <!-- 前へ・次へボタン -->
+      <button onclick="moveAlbumPopup(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
+      <button onclick="moveAlbumPopup(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
+      <!-- 枚数表示 -->
+      <div id="album-popup-counter" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.4);color:white;font-size:11px;padding:2px 8px;border-radius:10px;"></div>
+    </div>
     <div class="album-popup-body">
       <div id="album-popup-title" class="album-popup-title"></div>
       <div id="album-popup-content" class="album-popup-content"></div>
-      <a id="album-popup-link" class="btn-more" target="_blank">📁 ドライブで開く</a>
+      <a id="album-popup-link" class="btn-more" target="_blank">📁 ドライブで元の写真を開く</a>
       <button class="album-popup-close" onclick="closeAlbumPopup()">× 閉じる</button>
     </div>
   </div>
@@ -1040,6 +1047,7 @@
     albumLoading = true;
     if (albumOffset === 0) {
       document.getElementById('photo-grid').innerHTML = '';
+      popupPhotos = []; // 最初の読み込み時にリセット
     }
     try {
       const res = await fetch(GAS_URL, {
@@ -1055,12 +1063,13 @@
         return;
       }
       data.photos.forEach(p => {
+        const index = popupPhotos.length; // 追加前のlengthがこの写真のindex
+        popupPhotos.push(p);
+
         const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
                        p.fileUrl.match(/id=([^&]+)/)?.[1];
         const thumbnailUrl = fileId 
           ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200` : null;
-        const thumbnailUrlLarge = fileId
-          ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800` : null;
         const item = document.createElement('div');
         item.className = 'photo-item';
         item.innerHTML = `
@@ -1077,10 +1086,7 @@
             <div class="photo-overlay-title">${p.title}</div>
           </div>
         `;
-        item.onclick = () => {
-          const noThumb = item.dataset.noThumb === '1';
-          openAlbumPopup(p, noThumb ? null : thumbnailUrlLarge);
-        };
+        item.onclick = () => openAlbumPopup(p, null, index);
         grid.appendChild(item);
       });
       albumOffset += data.photos.length;
@@ -1102,7 +1108,33 @@
     }
   });
 
-  function openAlbumPopup(p, thumbnailUrlLarge) {
+  // ===========================
+  // アルバムポップアップ（前へ・次へ・スワイプ対応）
+  // ===========================
+  let currentPopupIndex = 0;
+  let popupPhotos = []; // 表示中のアルバム写真リスト
+
+  function openAlbumPopup(p, thumbnailUrlLarge, index) {
+    // indexが渡された場合はそれを使う、なければphotosから探す
+    if (index !== undefined) {
+      currentPopupIndex = index;
+    } else {
+      currentPopupIndex = popupPhotos.findIndex(ph => ph.fileUrl === p.fileUrl);
+      if (currentPopupIndex === -1) currentPopupIndex = 0;
+    }
+    renderPopup();
+    document.getElementById('album-popup-overlay').style.display = 'flex';
+  }
+
+  function renderPopup() {
+    const p = popupPhotos[currentPopupIndex];
+    if (!p) return;
+
+    const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] ||
+                   p.fileUrl.match(/id=([^&]+)/)?.[1];
+    const thumbnailUrlLarge = fileId
+      ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800` : null;
+
     const imgEl = document.getElementById('album-popup-img');
     if (thumbnailUrlLarge) {
       imgEl.src = thumbnailUrlLarge;
@@ -1113,7 +1145,15 @@
     document.getElementById('album-popup-title').textContent = p.title || '';
     document.getElementById('album-popup-content').textContent = p.content || '';
     document.getElementById('album-popup-link').href = p.fileUrl || '#';
-    document.getElementById('album-popup-overlay').style.display = 'flex';
+    document.getElementById('album-popup-counter').textContent =
+      `${currentPopupIndex + 1} / ${popupPhotos.length}`;
+  }
+
+  function moveAlbumPopup(dir) {
+    const next = currentPopupIndex + dir;
+    if (next < 0 || next >= popupPhotos.length) return;
+    currentPopupIndex = next;
+    renderPopup();
   }
 
   function closeAlbumPopup(event) {
@@ -1121,6 +1161,18 @@
       document.getElementById('album-popup-overlay').style.display = 'none';
     }
   }
+
+  // スワイプ検知
+  let swipeTouchStartX = 0;
+  document.getElementById('album-popup-overlay').addEventListener('touchstart', e => {
+    swipeTouchStartX = e.touches[0].clientX;
+  });
+  document.getElementById('album-popup-overlay').addEventListener('touchend', e => {
+    const diff = swipeTouchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { // 50px以上のスワイプで反応
+      moveAlbumPopup(diff > 0 ? 1 : -1);
+    }
+  });
 
   function filterSchedule() {
     const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
