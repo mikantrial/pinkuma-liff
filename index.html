@@ -395,7 +395,7 @@
       z-index: 100;
       display: none;
     }
-    .home-btn.visible { display: block; }
+    /* .home-btn.visible は top-buttons-wrap で制御 */
 
     /* アルバムポップアップ */
     .album-popup-overlay {
@@ -448,8 +448,10 @@
   </style>
 </head>
 <body>
-<button class="home-btn" id="back-btn" onclick="backFromEdit()" style="right:80px; display:none;">← 一覧へ</button>
-<button class="home-btn" id="home-btn" onclick="showScreen('top')">🏠 ホーム</button>  
+<div id="top-buttons-wrap" style="position:fixed; top:12px; right:12px; display:none; gap:6px; z-index:100;">
+  <button class="home-btn" id="back-btn" onclick="backFromEdit()" style="position:static; display:none;">← 一覧へ</button>
+  <button class="home-btn" id="home-btn" onclick="showScreen('top')" style="position:static; display:none;">🏠 ホーム</button>
+</div>  
 
 <!-- TOP画面 -->
 <div id="screen-top" class="screen active">
@@ -819,13 +821,14 @@
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + name).classList.add('active');
+    const wrap    = document.getElementById('top-buttons-wrap');
     const homeBtn = document.getElementById('home-btn');
     const backBtn = document.getElementById('back-btn');
     if (name === 'top') {
-      homeBtn.classList.remove('visible');
-      backBtn.style.display = 'none';
+      wrap.style.display = 'none';
     } else {
-      homeBtn.classList.add('visible');
+      wrap.style.display = 'flex';
+      homeBtn.style.display = 'block';
       // 編集画面の時だけ「一覧へ」ボタンを表示
       backBtn.style.display = (name === 'edit') ? 'block' : 'none';
     }
