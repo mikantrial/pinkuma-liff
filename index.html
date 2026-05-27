@@ -358,6 +358,27 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    /* トースト通知 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      z-index: 500;
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .toast.success { background: #4CAF50; }
+    .toast.error   { background: #e53935; }
+    .toast.info    { background: #FF9800; }
+    .toast.show    { opacity: 1; }
 
     /* ホームへ戻る */
     .home-btn {
@@ -628,6 +649,9 @@
   </a>
 </div>
 
+<!-- トースト通知 -->
+<div id="toast" class="toast"></div>
+
 <!-- 処理中オーバーレイ -->
 <div id="processing-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:400; flex-direction:column; align-items:center; justify-content:center;">
   <div style="background:white; border-radius:12px; padding:28px 36px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
@@ -743,6 +767,20 @@
   };
 
   // ===========================
+  // トースト通知
+  // ===========================
+  let toastTimer = null;
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+
+  // ===========================
   // 処理中オーバーレイ
   // ===========================
   function showProcessing() {
@@ -834,7 +872,7 @@
     const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
     const validFiles = newFiles.filter(f => !f.type.startsWith('video/'));
     if (invalidFiles.length > 0) {
-      alert(`動画ファイル${invalidFiles.length}件は選択できません。\n画像ファイルのみ追加します。`);
+      showToast(`動画ファイル${invalidFiles.length}件は選択できません`, 'info');
       input.value = '';
       return;
     }
@@ -890,7 +928,7 @@
     if (!file) return;
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_VIDEO_SIZE_MB) {
-      alert(`動画ファイルが大きすぎます（${sizeMB.toFixed(1)}MB）。\n${MAX_VIDEO_SIZE_MB}MB以下の動画のみアップできます。\n大きい動画はGoogleドライブから直接アップしてください。`);
+      showToast(`動画が大きすぎます（${sizeMB.toFixed(1)}MB）。${MAX_VIDEO_SIZE_MB}MB以下にしてください`, 'error');
       input.value = '';
       state.videoFile = null;
       document.getElementById('video-file-list').innerHTML = '';
@@ -944,7 +982,7 @@
     const originalText = document.getElementById('original-text').value;
     const videoDriveUrl = document.getElementById('video-drive-url').value.trim();
     if (!originalText && state.files.length === 0 && !state.videoFile && !videoDriveUrl) {
-      alert('テキストかファイルのどちらかを入力してください');
+      showToast('テキストかファイルのどちらかを入力してください', 'info');
       return;
     }
     const allFiles = [...state.files];
@@ -967,7 +1005,7 @@
       document.getElementById('complete-count').textContent = data.count + '件を受け付けました';
       showScreen('complete');
     } catch (err) {
-      alert('送信に失敗しました: ' + err.message);
+      showToast('送信に失敗しました', 'error');
       showScreen('input');
     }
   }
@@ -1001,11 +1039,11 @@
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       hideProcessing();
-      alert('保存しました！');
+      showToast('保存しました！');
       showSchedule(state.editPeriod);
     } catch (err) {
       hideProcessing();
-      alert('保存に失敗しました: ' + err.message);
+      showToast('保存に失敗しました', 'error');
     }
   }
 
@@ -1020,11 +1058,11 @@
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       hideProcessing();
-      alert('削除しました！');
+      showToast('削除しました！');
       showSchedule(state.editPeriod);
     } catch (err) {
       hideProcessing();
-      alert('削除に失敗しました: ' + err.message);
+      showToast('削除に失敗しました', 'error');
     }
   }
 
@@ -1231,12 +1269,12 @@
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       hideProcessing();
-      alert('削除しました！');
+      showToast('削除しました！');
       document.getElementById('album-popup-overlay').style.display = 'none';
       showAlbum(); // アルバムを再読み込み
     } catch (err) {
       hideProcessing();
-      alert('削除に失敗しました: ' + err.message);
+      showToast('削除に失敗しました', 'error');
     }
   }
 
