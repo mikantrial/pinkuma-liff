@@ -185,6 +185,7 @@
     .complete-wrap .count {
       font-size: 13px;
       color: #4CAF50;
+      margin-top: 12px;
       margin-bottom: 20px;
     }
 
@@ -779,14 +780,14 @@
   // トースト通知
   // ===========================
   let toastTimer = null;
-  function showToast(message, type = 'success') {
+  function showToast(message, type = 'success', duration = 2500) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.className = `toast ${type} show`;
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       toast.classList.remove('show');
-    }, 2500);
+    }, duration);
   }
 
   // ===========================
@@ -942,7 +943,7 @@
     if (!file) return;
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_VIDEO_SIZE_MB) {
-      showToast(`動画が大きすぎます（${sizeMB.toFixed(1)}MB）。${MAX_VIDEO_SIZE_MB}MB以下にしてください`, 'error');
+      showToast(`動画が大きすぎます（${sizeMB.toFixed(1)}MB）。${MAX_VIDEO_SIZE_MB}MB以下か、Googleドライブから直接アップしてください`, 'error', 5000);
       input.value = '';
       state.videoFile = null;
       document.getElementById('video-file-list').innerHTML = '';
