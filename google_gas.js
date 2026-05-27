@@ -1091,3 +1091,52 @@ function debugGetDBSummary() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.getSheetByName('設定').getRange('A16').setValue(summary.substring(0, 500));
 }
+
+// ===========================
+// 削除データ・削除ファイルの一括物理削除バッチ
+// ===========================
+function physicalDeleteBatch() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('DB');
+  const data = sheet.getDataRange().getValues();
+
+  let deletedCount = 0;
+  let fileDeletedCount = 0;
+  let errorCount = 0;
+
+  // 後ろから処理（行番号がずれないように）
+  for (let i = data.length - 1; i >= 1; i--) {
+    const row = data[i];
+    if (row[13] !== 'deleted') continue;
+
+    // L列（fileUrl）のGoogleドライブファイルを削除
+    const fileUrl = row[11] || '';
+    if (fileUrl) {
+      try {
+        const fileId = fileUrl.match(/\/d\/([^/]+)/)?.[1] ||
+                       fileUrl.match(/id=([^&]+)/)?.[1];
+        if (fileId) {
+          DriveApp.getFileById(fileId).setTrashed(true);
+          fileDeletedCount++;
+        }
+      } catch (err) {
+        // ファイルが既に削除済みなどの場合は無視
+        errorCount++;
+      }
+    }
+
+    // DBシートの行を物理削除
+    sheet.deleteRow(i + 1);
+    deletedCount++;
+  }
+
+  // 実行結果を設定シートに記録
+  const resultMsg = `物理削除完了：DBレコード${deletedCount}件、ファイル${fileDeletedCount}件削除、エラー${errorCount}件`;
+  SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName('設定')
+    .getRange('A30')
+    .setValue(`${new Date().toLocaleString()} ${resultMsg}`);
+
+  Logger.log(resultMsg);
+  return resultMsg;
+}
