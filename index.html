@@ -947,8 +947,7 @@
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_VIDEO_SIZE_MB) {
       showToast(`動画が大きすぎます（${sizeMB.toFixed(1)}MB）
-18MBを超える動画は Googleドライブへ
-直接アップしてください`, 'error', 5000);
+18MB以下かドライブからアップしてください`, 'error', 5000);
       input.value = '';
       state.videoFile = null;
       document.getElementById('video-file-list').innerHTML = '';
@@ -1179,7 +1178,7 @@
             onerror="this.style.display='none';this.parentElement.querySelector('.no-thumb').style.display='flex';this.parentElement.dataset.noThumb='1';">
           <div class="no-thumb" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
             <div style="font-size:24px;">🎥</div>
-            <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${p.title.substring(0,10)}</div>
+            <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${String(p.title).substring(0,10)}</div>
           </div>
           ${p.mimeType && p.mimeType.startsWith('video/') ? `
           <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:2px 4px;font-size:10px;">🎥</div>
