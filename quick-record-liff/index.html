@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>かんたん記録</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    .screen { display: none; padding: 12px 16px; }
+    .screen.active { display: block; }
+
+    /* ヘッダー */
+    .screen-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* TOP画面 */
+    .top-header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-top: 8px;
+    }
+    .top-header h1 { font-size: 20px; color: #333; }
+    .top-header p { font-size: 12px; color: #888; margin-top: 4px; }
+    .top-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .top-btn {
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: opacity 0.2s;
+    }
+    .top-btn:active { opacity: 0.7; }
+    .top-btn .btn-icon { font-size: 24px; }
+    .btn-primary-color { background: #4CAF50; color: white; }
+    .btn-blue { background: #BBDEFB; color: #1565C0; }
+    .btn-orange { background: #FFE0B2; color: #E65100; }
+    .btn-purple { background: #F3E5F5; color: #6A1B9A; }
+    .btn-gray { background: #F5F5F5; color: #555; border: 1px solid #ddd; }
+
+    /* フォーム */
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+    textarea { resize: none; height: 80px; }
+
+    /* ファイル */
+    .file-btn {
+      display: inline-block;
+      padding: 8px 14px;
+      background: #f0f0f0;
+      border: 1px dashed #aaa;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #555;
+    }
+    input[type="file"] { display: none; }
+    .file-list {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #444;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .file-item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-remove {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    /* ボタン */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-submit:active { opacity: 0.8; }
+    .btn-danger {
+      width: 100%;
+      padding: 14px;
+      background: white;
+      color: #e53935;
+      border: 1px solid #e53935;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* ホームボタン */
+    .home-btn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #666;
+      cursor: pointer;
+      z-index: 100;
+      display: none;
+    }
+    .home-btn.visible { display: block; }
+
+    /* 一覧へ戻るボタン */
+    .list-btn {
+      position: fixed;
+      top: 12px;
+      right: 95px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #666;
+      cursor: pointer;
+      z-index: 100;
+      display: none;
+    }
+    .list-btn.visible { display: block; }
+
+    /* 送信中・完了 */
+    .loading-wrap, .complete-wrap {
+      text-align: center;
+      padding: 40px 0;
+    }
+    .loading-wrap .icon, .complete-wrap .icon { font-size: 48px; margin-bottom: 12px; }
+    .loading-wrap .text, .complete-wrap .text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .loading-wrap .sub, .complete-wrap .sub { font-size: 13px; color: #888; }
+
+    /* 一覧 */
+    .record-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .record-item {
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+    .record-item:active { opacity: 0.7; }
+    .record-meta {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .record-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .record-memo {
+      font-size: 12px;
+      color: #666;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .status- { background: #f0f0f0; color: #888; }
+    .status-未対応 { background: #FFEBEE; color: #c62828; }
+    .status-対応中 { background: #FFF8E1; color: #f57f17; }
+    .status-完了 { background: #E8F5E9; color: #2e7d32; }
+    .status-保留 { background: #EDE7F6; color: #4527a0; }
+
+    /* フィルター */
+    .filter-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-row select,
+    .filter-row input {
+      flex: 1;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    /* 編集画面 */
+    .edit-field {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .edit-field label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .edit-field input,
+    .edit-field textarea,
+    .edit-field select {
+      border: none;
+      border-bottom: 1px solid #eee;
+      border-radius: 0;
+      padding: 4px 0;
+    }
+    .edit-field input:focus,
+    .edit-field textarea:focus,
+    .edit-field select:focus {
+      border-bottom-color: #4CAF50;
+    }
+
+    /* ファイル一覧（詳細画面） */
+    .file-card {
+      background: white;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .file-card-name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .file-card-summary {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+    .file-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .file-card-actions a,
+    .file-card-actions button {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #4CAF50;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .file-card-actions .btn-del {
+      color: #e53935;
+      border-color: #e53935;
+    }
+
+    .empty-msg {
+      text-align: center;
+      padding: 24px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .screen-flex {
+      height: 100vh;
+      flex-direction: column;
+      padding: 12px 16px;
+    }
+    .screen-flex.active { display: flex; }
+
+    /* PC向け一覧テーブル */
+    #pc-record-table tr:hover { background: #f9fffe; cursor: pointer; }
+    #pc-record-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+
+  </style>
+</head>
+<body>
+<button class="home-btn" id="home-btn" onclick="showScreen('top')">🏠 ホーム</button>
+<button class="list-btn" id="list-btn"
+  onclick="state.previousScreen === 'records-pc' ? showRecordsPC() : showRecords()">
+  📋 一覧へ
+</button>
+
+<!-- TOP画面 -->
+<div id="screen-top" class="screen active">
+  <div class="top-header">
+    <h1>🗒️ かんたん記録</h1>
+    <p>記録をかんたんに残そう</p>
+  </div>
+  <div class="top-buttons">
+    <button class="top-btn btn-primary-color" onclick="showInputScreen()">
+      <span class="btn-icon">✏️</span>
+      <span>新しく記録する</span>
+    </button>
+    <button class="top-btn btn-blue" onclick="showRecords()">
+      <span class="btn-icon">📋</span>
+      <span>記録を見る・編集・削除</span>
+    </button>
+    <button class="top-btn btn-blue" onclick="showRecordsPC()">
+      <span class="btn-icon">🖥️</span>
+      <span>記録を見る・編集・削除（PC用）</span>
+    </button>
+    <button class="top-btn btn-orange" onclick="showRecentPosts()">
+      <span class="btn-icon">🕐</span>
+      <span>送信履歴</span>
+    </button>
+	<button class="top-btn btn-gray" onclick="showSettingsScreen()">
+      <span class="btn-icon">⚙️</span>
+      <span>設定（登録者名の変更）</span>
+    </button>
+  </div>
+</div>
+
+<!-- 入力画面 -->
+<div id="screen-input" class="screen">
+  <div class="screen-title">✏️ 新しく記録する</div>
+
+  <div class="form-group">
+    <label>タイトル（必須）</label>
+    <input type="text" id="input-title" placeholder="例）外壁点検 北側">
+  </div>
+  <div class="form-group">
+    <label>メモ（任意）</label>
+    <textarea id="input-memo" placeholder="詳細を入力してください"></textarea>
+  </div>
+  <div class="form-group">
+    <label>登録日</label>
+    <input type="date" id="input-date">
+  </div>
+  <div class="form-group">
+    <label>登録者</label>
+	<div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+		<select id="input-registrant-select" onchange="onRegistrantSelectChange()"
+		style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:white;">
+		<option value="">候補から選ぶ</option>
+		</select>
+		<span style="color:#aaa; font-size:18px;">→</span>
+		<input type="text" id="input-registrant-text" placeholder="登録者名（必須）"
+		style="flex:1;">
+	</div>
+	<div style="font-size:11px; color:#999;">
+		※左の候補から選ぶと右の欄に入力されます。右の欄の名前が登録されます。
+	</div>
+	<datalist id="registrant-list"></datalist>
+  </div>
+  <div class="form-group">
+    <label>担当者1（任意）</label>
+    <select id="input-assignee1">
+      <option value="">なし</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>担当者2（任意）</label>
+    <select id="input-assignee2">
+      <option value="">なし</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>大カテゴリ</label>
+    <select id="input-large-cat" onchange="onLargeCatChange()">
+      <option value="">選択してください</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>小カテゴリ</label>
+    <select id="input-small-cat">
+      <option value="">先に大カテゴリを選択</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>ファイル添付（複数選択可）</label>
+    <label class="file-btn" for="input-file">📎 ファイルを選ぶ</label>
+    <input type="file" id="input-file"
+      accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      multiple onchange="onFileSelected(this)">
+    <div class="file-list" id="input-file-list"></div>
+  </div>
+
+  <button class="btn-submit" onclick="submitRecord()">送信する</button>
+</div>
+
+<!-- 送信中画面 -->
+<div id="screen-loading" class="screen">
+  <div class="loading-wrap">
+    <div class="icon">📨</div>
+    <div class="text">送信中...</div>
+    <div class="sub">しばらくお待ちください</div>
+    <div class="sub" style="margin-top:8px; color:#e53935;">⚠️ 画面を閉じないでください</div>
+  </div>
+</div>
+
+<!-- 完了画面 -->
+<div id="screen-complete" class="screen">
+  <div class="complete-wrap">
+    <div class="icon">✅</div>
+    <div class="text">登録しました！</div>
+    <div class="sub">AIが順番に解析します</div>
+    <button class="btn-submit" style="margin-top:24px;" onclick="showScreen('top')">ホームに戻る</button>
+  </div>
+</div>
+
+<!-- 記録一覧画面 -->
+<div id="screen-records" class="screen screen-flex">
+  <div class="screen-title">📋 記録一覧</div>
+  <div class="filter-bar">
+    <div class="filter-row">
+      <select id="filter-large-cat" onchange="onFilterLargeCatChange()">
+        <option value="">全カテゴリ</option>
+      </select>
+      <select id="filter-small-cat" onchange="filterRecords()">
+        <option value="">全サブカテゴリ</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <select id="filter-status" onchange="filterRecords()">
+		<option value="">全ステータス</option>
+      </select>
+      <select id="filter-registrant" onchange="filterRecords()">
+        <option value="">全登録者</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <select id="filter-assignee" onchange="filterRecords()">
+        <option value="">全担当者</option>
+      </select>
+      <input type="text" id="filter-keyword" placeholder="🔍 キーワード検索"
+        oninput="filterRecords()">
+    </div>
+  </div>
+  <div class="record-list" id="record-list">
+    <div class="empty-msg">読み込み中...</div>
+  </div>
+</div>
+
+<!-- PC向け記録一覧画面 -->
+<div id="screen-records-pc" class="screen">
+  <div class="screen-title">🖥️ 記録一覧（PC用）</div>
+  <div class="filter-bar">
+    <div class="filter-row">
+      <select id="pc-filter-large-cat" onchange="onPCFilterLargeCatChange()">
+        <option value="">全カテゴリ</option>
+      </select>
+      <select id="pc-filter-small-cat" onchange="filterRecordsPC()">
+        <option value="">全サブカテゴリ</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <select id="pc-filter-status" onchange="filterRecordsPC()">
+        <option value="">全ステータス</option>
+      </select>
+      <select id="pc-filter-registrant" onchange="filterRecordsPC()">
+        <option value="">全登録者</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <select id="pc-filter-assignee" onchange="filterRecordsPC()">
+        <option value="">全担当者</option>
+      </select>
+      <input type="text" id="pc-filter-keyword" placeholder="🔍 キーワード検索"
+        oninput="filterRecordsPC()">
+    </div>
+  </div>
+  <div style="display:flex; justify-content:flex-end; padding:4px 8px;">
+    <span id="pc-total-count" style="font-size:12px; color:#888;"></span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table id="pc-record-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr style="background:#f8f8f8;">
+          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">登録日</th>
+          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee;">タイトル</th>
+          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">カテゴリ</th>
+          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">登録者</th>
+          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">担当者</th>
+          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">ステータス</th>
+        </tr>
+      </thead>
+      <tbody id="pc-record-tbody">
+        <tr><td colspan="6" class="schedule-empty">読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- <div id="pc-total-count" style="font-size:12px; color:#888; padding:8px 12px;"></div> -->
+</div>
+
+<!-- 詳細・編集画面 -->
+<div id="screen-detail" class="screen">
+  <div class="screen-title">📄 詳細・編集</div>
+
+  <div class="edit-field">
+    <label>タイトル</label>
+    <input type="text" id="detail-title">
+  </div>
+  <div class="edit-field">
+    <label>メモ</label>
+    <textarea id="detail-memo" rows="3"></textarea>
+  </div>
+  <div class="edit-field">
+    <label>登録日</label>
+    <input type="date" id="detail-date">
+  </div>
+  <div class="edit-field">
+    <label>登録者</label>
+    <input type="text" id="detail-registrant" readonly style="color:#888;">
+  </div>
+  <div class="edit-field">
+    <label>担当者1</label>
+    <select id="detail-assignee1"><option value="">なし</option></select>
+  </div>
+  <div class="edit-field">
+    <label>担当者2</label>
+    <select id="detail-assignee2"><option value="">なし</option></select>
+  </div>
+  <div class="edit-field">
+    <label>ステータス</label>
+    <select id="detail-status">
+		<option value="">未設定</option>
+	</select>
+  </div>
+  <!-- <div class="edit-field">
+    <label>カテゴリ</label>
+    <div id="detail-category" style="font-size:13px; color:#555; padding:4px 0;"></div>
+  </div> -->
+  <div class="edit-field">
+	<label>カテゴリ</label>
+	<div id="detail-category" style="font-size:13px; color:#555; padding:4px 0; margin-bottom:8px;"></div>
+	<div style="font-size:11px; color:#888; margin-bottom:4px;">カテゴリを変更する</div>
+	<select id="detail-large-cat" onchange="onDetailLargeCatChange()"
+		style="width:100%; margin-bottom:6px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+		<option value="">大カテゴリを選択</option>
+	</select>
+	<select id="detail-small-cat"
+		style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+		<option value="">小カテゴリを選択</option>
+	</select>
+  </div>
+  <!-- <div class="edit-field">
+    <label>AI解析内容</label>
+    <div id="detail-ai-summary" style="font-size:13px; color:#555; padding:4px 0; line-height:1.6;"></div>
+  </div> -->
+  <!-- <div class="edit-field">
+    <label>Driveフォルダ</label>
+    <a id="detail-folder-link" href="#" target="_blank"
+      style="font-size:13px; color:#4CAF50;">📁 Driveで開く</a>
+  </div> -->
+
+  <div style="margin-top:12px;">
+    <div class="screen-title" style="font-size:14px;">📎 添付ファイル</div>
+    <div id="detail-files"></div>
+    <div class="form-group" style="margin-top:8px;">
+      <label class="file-btn" for="detail-add-file">＋ ファイルを追加</label>
+      <input type="file" id="detail-add-file"
+        accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        multiple onchange="onDetailFileSelected(this)">
+      <div class="file-list" id="detail-add-file-list"></div>
+    </div>
+  </div>
+
+  <button class="btn-submit" onclick="saveDetail()">💾 保存する</button>
+  <button class="btn-danger" onclick="deleteRecord()">🗑️ 削除する</button>
+  <p class="back-link" onclick="state.previousScreen === 'records-pc' ? showRecordsPC() : showRecords()">← 一覧に戻る</p>
+</div>
+
+<!-- 送信履歴画面 -->
+<div id="screen-log" class="screen screen-flex">
+  <div class="screen-title">🕐 送信履歴</div>
+  <div class="record-list" id="log-list">
+    <div class="empty-msg">読み込み中...</div>
+  </div>
+</div>
+
+<!-- 設定画面 -->
+<div id="screen-settings" class="screen">
+  <div class="screen-title">⚙️ 設定</div>
+  <div class="edit-field">
+    <label>登録者名（あなたの名前）</label>
+    <input type="text" id="settings-name" placeholder="名前を入力してください">
+  </div>
+  <button class="btn-submit" onclick="saveSettings()">💾 保存する</button>
+</div>
+
+<script>
+  //const GAS_URL = 'https://script.google.com/macros/s/AKfycbzskiGwd0hn9PikxwpqBH2rknq_6hgvYFmykaXqY-p6JrcIwoUoxB0tyQ4Q54BpvoA7/exec'; //【設定シートのGAS_URLの値を貼り付け】
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbymgyImIBlB_ORavBex3WxZb_dNX30PS_MkGK70F9AmCaCI06BpFcV6SLZoWOlUqkM/exec'
+  const LIFF_ID = '2010175791-7oHAT9CY'; //【設定シートのLIFF_IDの値を貼り付け】
+
+  let state = {
+    userId: null,
+    categories: [],
+    users: [],
+  	statuses: [],
+    files: [],
+    additionalFiles: [],
+    currentRecordId: null,
+    allRecords: [],
+    previousScreen: 'records'
+  };
+
+  // ===========================
+  // 初期化
+  // ===========================
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      state.userId = profile.userId;
+    } catch (err) {
+      state.userId = 'unknown';
+    }
+
+    // 登録者名の初期設定
+    initRegistrantName();
+
+    // 設定（カテゴリ・ユーザー一覧）を取得
+    await loadConfig();
+
+    // 登録日のデフォルトを今日に
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('input-date').value = today;
+  }
+
+  function initRegistrantName() {
+    const saved = localStorage.getItem('registrantName');
+    if (!saved) {
+      const name = prompt('あなたのお名前を入力してください（登録者の初期値になります）');
+      if (name) {
+        localStorage.setItem('registrantName', name);
+      }
+    }
+  }
+
+  async function loadConfig() {
+    // キャッシュがあれば即座に反映
+    const cached = localStorage.getItem('kantan_config');
+    if (cached) {
+      try {
+        const cachedData = JSON.parse(cached);
+        state.categories = cachedData.categories || [];
+        state.users = cachedData.users || [];
+        state.statuses = cachedData.statuses || [];
+        applyConfig();
+      } catch (e) {}
+    }
+
+    // バックグラウンドで最新データを取得
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getConfig' })
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      state.categories = data.categories;
+      state.users = data.users;
+      state.statuses = data.statuses || [];
+
+      // キャッシュを更新
+      localStorage.setItem('kantan_config', JSON.stringify({
+        categories: data.categories,
+        users: data.users,
+        statuses: data.statuses || []
+      }));
+
+      applyConfig();
+    } catch (err) {
+      console.error('設定取得エラー:', err);
+    }
+  }
+
+  function applyConfig() {
+    // 登録者の初期値をセット
+    const savedName = localStorage.getItem('registrantName') || '';
+    document.getElementById('input-registrant-text').value = savedName;
+
+    // カテゴリ選択肢をセット
+    buildLargeCatOptions('input-large-cat');
+    buildLargeCatOptions('filter-large-cat');
+
+    // ユーザー選択肢をセット
+    buildUserOptions('input-registrant-select', '');
+    buildUserOptions('input-assignee1', '');
+    buildUserOptions('input-assignee2', '');
+    buildUserOptions('filter-registrant', '');
+    buildUserOptions('filter-assignee', '');
+
+    // ステータス選択肢をセット
+    buildStatusOptions('input-status');
+    buildStatusOptions('detail-status');
+    buildStatusOptions('filter-status', true);
+  }
+
+  function showInputScreen() {
+	const savedName = localStorage.getItem('registrantName') || '';
+	document.getElementById('input-registrant-text').value = savedName;
+	showScreen('input');
+  }
+
+  // ===========================
+  // 画面切り替え
+  // ===========================
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    const homeBtn = document.getElementById('home-btn');
+    const listBtn = document.getElementById('list-btn');
+    if (name === 'top') {
+      homeBtn.classList.remove('visible');
+      listBtn.classList.remove('visible');
+    } else if (name === 'detail') {
+      homeBtn.classList.add('visible');
+      listBtn.classList.add('visible');
+    } else {
+      homeBtn.classList.add('visible');
+      listBtn.classList.remove('visible');
+    }
+  }
+
+  // ===========================
+  // カテゴリ選択肢の構築
+  // ===========================
+  function buildLargeCatOptions(selectId) {
+    const sel = document.getElementById(selectId);
+    const firstOption = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(firstOption);
+    const largeList = [...new Set(state.categories.map(c => c.large))];
+    largeList.forEach(large => {
+      const opt = document.createElement('option');
+      opt.value = large;
+      opt.textContent = large;
+      sel.appendChild(opt);
+    });
+  }
+
+  function buildSmallCatOptions(selectId, largeCat) {
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = '';
+    const smalls = state.categories.filter(c => c.large === largeCat);
+    smalls.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.small;
+      opt.textContent = c.small;
+      sel.appendChild(opt);
+    });
+  }
+
+  function onLargeCatChange() {
+    const large = document.getElementById('input-large-cat').value;
+    buildSmallCatOptions('input-small-cat', large);
+  }
+
+  function onFilterLargeCatChange() {
+    const large = document.getElementById('filter-large-cat').value;
+    if (large) {
+      buildSmallCatOptions('filter-small-cat', large);
+      // 先頭に「全サブカテゴリ」を追加
+      const sel = document.getElementById('filter-small-cat');
+      const allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = '全サブカテゴリ';
+      sel.insertBefore(allOpt, sel.firstChild);
+      sel.value = '';
+    } else {
+      document.getElementById('filter-small-cat').innerHTML =
+        '<option value="">全サブカテゴリ</option>';
+    }
+    filterRecords();
+  }
+
+  function onDetailLargeCatChange() {
+	const large = document.getElementById('detail-large-cat').value;
+	buildSmallCatOptions('detail-small-cat', large);
+  }
+
+  // ===========================
+  // ユーザー選択肢の構築
+  // ===========================
+  function buildUserOptions(selectId, selectedValue) {
+    const sel = document.getElementById(selectId);
+    const firstOption = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(firstOption);
+    state.users.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      if (name === selectedValue) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function onRegistrantSelectChange() {
+	const sel = document.getElementById('input-registrant-select');
+	if (sel.value) {
+		document.getElementById('input-registrant-text').value = sel.value;
+		sel.value = ''; // 選択後はリセットして「候補から選ぶ」に戻す
+	}
+  }
+
+  // ===========================
+  // ステータス選択肢の構築
+  // ===========================
+  function buildStatusOptions(selectId, addSpecialOptions = false) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const firstOption = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(firstOption);
+    if (addSpecialOptions) {
+      const opt1 = document.createElement('option');
+      opt1.value = '__not_completed__';
+      opt1.textContent = '完了以外';
+      sel.appendChild(opt1);
+      const opt2 = document.createElement('option');
+      opt2.value = '__unset__';
+      opt2.textContent = '未設定';
+      sel.appendChild(opt2);
+    }
+    state.statuses.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      sel.appendChild(opt);
+    });
+  }
+
+  // ===========================
+  // ファイル選択
+  // ===========================
+  function onFileSelected(input) {
+    Array.from(input.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const largeCat = document.getElementById('input-large-cat').value;
+        const smallCat = document.getElementById('input-small-cat').value;
+        const catConfig = state.categories.find(
+          c => c.large === largeCat && c.small === smallCat
+        );
+        const resizeEnabled = catConfig ? catConfig.resize : false;
+
+        let base64 = e.target.result;
+        if (resizeEnabled && file.type.startsWith('image/')) {
+          base64 = await resizeImage(file, 1200);
+        }
+
+        state.files.push({
+          fileBase64: base64,
+          fileName: file.name,
+          mimeType: file.type
+        });
+        renderFileList('input-file-list', state.files);
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  async function resizeImage(file, maxSize) {
+    const img = await createImageBitmap(file);
+    const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+    if (scale >= 1) {
+      return new Promise(resolve => {
+        const r = new FileReader();
+        r.onload = e => resolve(e.target.result);
+        r.readAsDataURL(file);
+      });
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL(file.type, 0.85);
+  }
+
+  function renderFileList(listId, files) {
+    const list = document.getElementById(listId);
+    list.innerHTML = '';
+    files.forEach((file, index) => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.innerHTML = `
+        <span class="file-item-name">📄 ${file.fileName}</span>
+        <button class="file-remove" onclick="removeFile(${index}, '${listId}')">×</button>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function removeFile(index, listId) {
+    if (listId === 'input-file-list') {
+      state.files.splice(index, 1);
+      renderFileList('input-file-list', state.files);
+    } else {
+      state.additionalFiles.splice(index, 1);
+      renderFileList('detail-add-file-list', state.additionalFiles);
+    }
+  }
+
+  // ===========================
+  // 記録を送信
+  // ===========================
+  async function submitRecord() {
+    const title = document.getElementById('input-title').value.trim();
+    if (!title) {
+      alert('タイトルを入力してください');
+      return;
+    }
+    const largeCat = document.getElementById('input-large-cat').value;
+    const smallCat = document.getElementById('input-small-cat').value;
+    if (!largeCat || !smallCat) {
+      alert('カテゴリを選択してください');
+      return;
+    }
+
+    // 登録者名
+	let registrantName = document.getElementById('input-registrant-text').value.trim();
+	if (!registrantName) {
+		registrantName = document.getElementById('input-registrant-select').value;
+	}
+
+    if (!registrantName) {
+      alert('登録者名を入力または選択してください');
+      return;
+    }
+
+    showScreen('loading');
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'submit',
+          userId: state.userId,
+          registrantName: registrantName,
+          registeredDate: document.getElementById('input-date').value,
+          title: title,
+          memo: document.getElementById('input-memo').value,
+          largeCat: largeCat,
+          smallCat: smallCat,
+          assignee1: document.getElementById('input-assignee1').value,
+          assignee2: document.getElementById('input-assignee2').value,
+          files: state.files
+        })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      // フォームをリセット
+      state.files = [];
+      document.getElementById('input-title').value = '';
+      document.getElementById('input-memo').value = '';
+      document.getElementById('input-file-list').innerHTML = '';
+      document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
+
+      showScreen('complete');
+    } catch (err) {
+      alert('送信に失敗しました: ' + err.message);
+      showScreen('input');
+    }
+  }
+
+  // ===========================
+  // 記録一覧
+  // ===========================
+  async function showRecords() {
+    showScreen('records');
+    document.getElementById('record-list').innerHTML = '<div class="empty-msg">読み込み中...</div>';
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRecords', limit: 500 })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      state.allRecords = data.records;
+
+      // フィルターの登録者選択肢を更新
+      buildUserOptions('filter-registrant', '');
+
+      filterRecords();
+    } catch (err) {
+      document.getElementById('record-list').innerHTML =
+        '<div class="empty-msg">読み込みに失敗しました</div>';
+    }
+  }
+
+  function filterRecords() {
+    const largeCat = document.getElementById('filter-large-cat').value;
+    const smallCat = document.getElementById('filter-small-cat').value;
+    const status = document.getElementById('filter-status').value;
+    const registrant = document.getElementById('filter-registrant').value;
+    const keyword = document.getElementById('filter-keyword').value.toLowerCase();
+    const assignee = document.getElementById('filter-assignee').value;
+
+    const filtered = state.allRecords.filter(r => {
+      if (largeCat && r.largeCat !== largeCat) return false;
+      if (smallCat && r.smallCat !== smallCat) return false;
+      // if (status && r.status !== status) return false;
+      if (status === '__not_completed__' && r.status === '完了') return false;
+      else if (status === '__unset__' && r.status !== '') return false;
+      else if (status && status !== '__not_completed__' && status !== '__unset__' && r.status !== status) return false;
+
+      if (registrant && r.registrantName !== registrant) return false;
+
+      if (assignee && r.assignee1 !== assignee && r.assignee2 !== assignee) return false;
+
+      if (keyword) {
+		//キーワード検索の対象を指定
+        // const target = [r.title, r.memo, r.registrantName, r.assignee1, r.assignee2]
+        //   .join(' ').toLowerCase();
+		const target = [r.title, r.memo].join(' ').toLowerCase();
+        if (!target.includes(keyword)) return false;
+      }
+      return true;
+    });
+
+    const list = document.getElementById('record-list');
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty-msg">該当する記録はありません</div>';
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'record-item';
+      item.onclick = () => showDetail(r.id);
+      const statusClass = 'status-' + (r.status || '');
+      item.innerHTML = `
+        <div class="record-meta">
+          <span>${r.registeredDate || ''}</span>
+          <span>${r.largeCat} > ${r.smallCat}</span>
+          <span>${r.registrantName || ''}</span>
+          <span class="status-badge ${statusClass}">${r.status || '未設定'}</span>
+        </div>
+        <div class="record-title">${r.title}</div>
+        ${r.memo ? `<div class="record-memo">${r.memo}</div>` : ''}
+      `;
+      list.appendChild(item);
+    });
+  }
+
+ // ===========================
+  // PC向け記録一覧
+  // ===========================
+  let pcAllRecords = [];
+
+  async function showRecordsPC() {
+    showScreen('records-pc');
+    document.getElementById('pc-record-tbody').innerHTML =
+      '<tr><td colspan="6" class="empty-msg">読み込み中...</td></tr>';
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRecords', limit: 1000 })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      pcAllRecords = data.records;
+
+      // フィルター選択肢を構築
+      buildLargeCatOptions('pc-filter-large-cat');
+      buildUserOptions('pc-filter-registrant', '');
+      buildStatusOptions('pc-filter-status', true);
+      buildUserOptions('pc-filter-assignee', '');
+
+      filterRecordsPC();
+    } catch (err) {
+      document.getElementById('pc-record-tbody').innerHTML =
+        '<tr><td colspan="6" class="empty-msg">読み込みに失敗しました</td></tr>';
+    }
+  }
+
+  function onPCFilterLargeCatChange() {
+    const large = document.getElementById('pc-filter-large-cat').value;
+    if (large) {
+      buildSmallCatOptions('pc-filter-small-cat', large);
+      const sel = document.getElementById('pc-filter-small-cat');
+      const allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = '全サブカテゴリ';
+      sel.insertBefore(allOpt, sel.firstChild);
+      sel.value = '';
+    } else {
+      document.getElementById('pc-filter-small-cat').innerHTML =
+        '<option value="">全サブカテゴリ</option>';
+    }
+    filterRecordsPC();
+  }
+
+  function filterRecordsPC() {
+    const largeCat  = document.getElementById('pc-filter-large-cat').value;
+    const smallCat  = document.getElementById('pc-filter-small-cat').value;
+    const status    = document.getElementById('pc-filter-status').value;
+    const registrant = document.getElementById('pc-filter-registrant').value;
+    const keyword   = document.getElementById('pc-filter-keyword').value.toLowerCase();
+    const assignee  = document.getElementById('pc-filter-assignee').value;
+
+    const filtered = pcAllRecords.filter(r => {
+      if (largeCat && r.largeCat !== largeCat) return false;
+      if (smallCat && r.smallCat !== smallCat) return false;
+      // if (status && r.status !== status) return false;
+      if (status === '__not_completed__' && r.status === '完了') return false;
+      else if (status === '__unset__' && r.status !== '') return false;
+      else if (status && status !== '__not_completed__' && status !== '__unset__' && r.status !== status) return false;
+
+      if (registrant && r.registrantName !== registrant) return false;
+
+      if (assignee && r.assignee1 !== assignee && r.assignee2 !== assignee) return false;
+
+      if (keyword) {
+        const target = [r.title, r.memo].join(' ').toLowerCase();
+        if (!target.includes(keyword)) return false;
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById('pc-record-tbody');
+    document.getElementById('pc-total-count').textContent = `${filtered.length}件`;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">該当する記録はありません</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      const statusClass = 'status-' + (r.status || '');
+      tr.innerHTML = `
+        <td style="white-space:nowrap;">${r.registeredDate || ''}</td>
+        <td style="font-weight:bold;">${r.title || ''}</td>
+        <td style="white-space:nowrap; font-size:12px; color:#888;">${r.largeCat || ''} > ${r.smallCat || ''}</td>
+        <td>${r.registrantName || ''}</td>
+        <td>${[r.assignee1, r.assignee2].filter(Boolean).join('・') || ''}</td>
+        <td><span class="status-badge ${statusClass}">${r.status || '未設定'}</span></td>
+      `;
+      tr.onclick = () => showDetail(r.id);
+      tbody.appendChild(tr);
+    });
+  } 
+
+  // ===========================
+  // 詳細・編集画面
+  // ===========================
+  async function showDetail(id) {
+    // 遷移元の画面を記録
+    const currentScreen = document.querySelector('.screen.active');
+    if (currentScreen) {
+      state.previousScreen = currentScreen.id.replace('screen-', '');
+    }
+    state.currentRecordId = id;
+    state.additionalFiles = [];
+    document.getElementById('detail-add-file-list').innerHTML = '';
+    showScreen('detail');
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRecord', id: id })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      const r = data.record;
+      document.getElementById('detail-title').value = r.title || '';
+      document.getElementById('detail-memo').value = r.memo || '';
+      document.getElementById('detail-date').value = r.registeredDate || '';
+      document.getElementById('detail-registrant').value = r.registrantName || '';
+      document.getElementById('detail-status').value = r.status || '';
+      document.getElementById('detail-category').textContent =
+        `${r.largeCat} > ${r.smallCat}`;
+	
+      buildLargeCatOptions('detail-large-cat');
+      document.getElementById('detail-large-cat').value = r.largeCat || '';
+      if (r.largeCat) {
+		buildSmallCatOptions('detail-small-cat', r.largeCat);
+		document.getElementById('detail-small-cat').value = r.smallCat || '';
+      }
+
+    //   document.getElementById('detail-ai-summary').textContent =
+    //     r.aiSummary || '（解析中またはなし）';
+    //   document.getElementById('detail-folder-link').href = r.driveFolderUrl || '#';
+
+      // 担当者選択肢
+      buildUserOptions('detail-assignee1', r.assignee1 || '');
+      buildUserOptions('detail-assignee2', r.assignee2 || '');
+
+      // ファイル一覧
+      const fileDiv = document.getElementById('detail-files');
+      if (data.files.length === 0) {
+        fileDiv.innerHTML = '<div class="empty-msg" style="padding:8px;">添付ファイルなし</div>';
+      } else {
+        fileDiv.innerHTML = '';
+        data.files.forEach(f => {
+          const card = document.createElement('div');
+          card.className = 'file-card';
+          card.innerHTML = `
+            <div class="file-card-name">📄 ${f.fileName}</div>
+            <div class="file-card-summary">${f.aiSummary || '（解析中）'}</div>
+            <div class="file-card-actions">
+              <a href="${f.fileUrl}" target="_blank">🔗 Driveで開く</a>
+              <button class="btn-del" onclick="deleteFile('${f.fileId}')">🗑️ 削除</button>
+            </div>
+          `;
+          fileDiv.appendChild(card);
+        });
+      }
+    } catch (err) {
+      alert('読み込みに失敗しました: ' + err.message);
+    }
+  }
+
+  async function saveDetail() {
+    const btn = document.querySelector('#screen-detail .btn-submit');
+    btn.disabled = true;
+    showScreen('loading');	
+    try {
+      // ① テキスト項目・カテゴリ・ステータスを保存
+      const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'updateRecord',
+        id: state.currentRecordId,
+        title: document.getElementById('detail-title').value,
+        memo: document.getElementById('detail-memo').value,
+        registeredDate: document.getElementById('detail-date').value,
+        assignee1: document.getElementById('detail-assignee1').value,
+        assignee2: document.getElementById('detail-assignee2').value,
+        status: document.getElementById('detail-status').value,
+        newLargeCat: document.getElementById('detail-large-cat').value,
+        newSmallCat: document.getElementById('detail-small-cat').value
+      })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      // ② 追加ファイルがあればアップロード
+      if (state.additionalFiles.length > 0) {
+      const fileRes = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+        action: 'addFile',
+        recordId: state.currentRecordId,
+        files: state.additionalFiles
+        })
+      });
+      const fileData = await fileRes.json();
+      if (!fileData.success) throw new Error(fileData.error);
+      state.additionalFiles = [];
+      }
+
+      // ③ 結果を通知
+      btn.disabled = false;
+      if (data.folderMoveError) {
+      alert('カテゴリとデータは保存しましたが、Driveフォルダの移動に失敗しました。Driveを手動で確認してください。');
+      } else {
+      alert('保存しました！');
+      }
+      // showRecords();
+      if (state.previousScreen === 'records-pc') {
+        showRecordsPC();
+      } else {
+        showRecords();
+      }
+    } catch (err) {
+      btn.disabled = false;
+      showScreen('detail');
+      alert('保存に失敗しました: ' + err.message);		
+    }
+  }
+
+  async function deleteRecord() {
+    if (!confirm('この記録を削除しますか？')) return;
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteRecord', id: state.currentRecordId })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      alert('削除しました！');
+      // showRecords();
+      if (state.previousScreen === 'records-pc') {
+        showRecordsPC();
+      } else {
+        showRecords();
+      }
+    } catch (err) {
+      alert('削除に失敗しました: ' + err.message);
+    }
+  }
+
+  async function deleteFile(fileId) {
+    if (!confirm('このファイルを削除しますか？')) return;
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteFile', fileId: fileId })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showDetail(state.currentRecordId);
+    } catch (err) {
+      alert('削除に失敗しました: ' + err.message);
+    }
+  }
+
+  // ===========================
+  // ファイル追加（詳細画面）
+  // ===========================
+  function onDetailFileSelected(input) {
+    Array.from(input.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        state.additionalFiles.push({
+          fileBase64: e.target.result,
+          fileName: file.name,
+          mimeType: file.type
+        });
+        renderFileList('detail-add-file-list', state.additionalFiles);
+        // document.getElementById('detail-upload-btn').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  // ===========================
+  // 送信履歴
+  // ===========================
+  async function showRecentPosts() {
+    showScreen('log');
+    document.getElementById('log-list').innerHTML = '<div class="empty-msg">読み込み中...</div>';
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRecentPosts', limit: 20 })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      const list = document.getElementById('log-list');
+      if (data.posts.length === 0) {
+        list.innerHTML = '<div class="empty-msg">履歴はありません</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.posts.forEach(p => {
+        const isError = p.aiStatus && String(p.aiStatus).startsWith('error');
+        const item = document.createElement('div');
+        item.className = 'record-item';
+        item.innerHTML = `
+          <div class="record-meta">
+            <span>${p.registeredAt}</span>
+            <span>${p.registrantName}</span>
+            <span>${p.largeCat} > ${p.smallCat}</span>
+          </div>
+          <div class="record-title" style="${isError ? 'color:#e53935;' : ''}">
+            ${isError ? '⚠️ 送信に失敗しました' : '✅ ' + p.title}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    } catch (err) {
+      document.getElementById('log-list').innerHTML =
+        '<div class="empty-msg">読み込みに失敗しました</div>';
+    }
+  }
+
+  // ===========================
+  // 設定画面
+  // ===========================
+  function showSettingsScreen() {
+    const saved = localStorage.getItem('registrantName') || '';
+    document.getElementById('settings-name').value = saved;
+    showScreen('settings');
+  }
+
+  function saveSettings() {
+    const name = document.getElementById('settings-name').value.trim();
+    if (!name) {
+      alert('名前を入力してください');
+      return;
+    }
+    localStorage.setItem('registrantName', name);
+    alert('保存しました！');
+    showScreen('top');
+  }
+
+  // ===========================
+  // 起動
+  // ===========================
+  initLiff();
+</script>
