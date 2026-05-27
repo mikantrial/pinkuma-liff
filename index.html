@@ -947,7 +947,7 @@
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > MAX_VIDEO_SIZE_MB) {
       showToast(`動画が大きすぎます（${sizeMB.toFixed(1)}MB）
-18MBを超える動画は Googleドライブドライブへ
+18MBを超える動画は Googleドライブへ
 直接アップしてください`, 'error', 5000);
       input.value = '';
       state.videoFile = null;
