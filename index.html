@@ -349,6 +349,12 @@
       display: block;
     }
 
+    /* スケルトンアニメーション */
+    @keyframes skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     /* ホームへ戻る */
     .home-btn {
       position: fixed;
@@ -546,6 +552,7 @@
     <div class="icon" id="complete-icon"></div>
     <div class="text" id="complete-text"></div>
     <div class="sub">順番に整理するね</div>
+    <div class="sub" style="color:#aaa; font-size:11px; margin-top:4px;">※整理が完了するまで数分かかることがあります</div>
     <div class="count" id="complete-count"></div>
   </div>
 </div>
@@ -617,6 +624,14 @@
   </a>
 </div>
 
+<!-- 処理中オーバーレイ -->
+<div id="processing-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:400; flex-direction:column; align-items:center; justify-content:center;">
+  <div style="background:white; border-radius:12px; padding:24px 32px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+    <div style="font-size:28px; margin-bottom:8px;">⏳</div>
+    <div style="font-size:15px; font-weight:bold; color:#333;">処理中...</div>
+  </div>
+</div>
+
 <!-- アルバムポップアップ -->
 <div id="album-popup-overlay" class="album-popup-overlay" style="display:none;" onclick="closeAlbumPopup(event)">
   <div class="album-popup">
@@ -633,6 +648,7 @@
       <div id="album-popup-content" class="album-popup-content"></div>
       <a id="album-popup-link" class="btn-more" target="_blank">📁 ドライブで元の写真を開く</a>
       <button class="album-popup-close" onclick="closeAlbumPopup()">× 閉じる</button>
+      <button class="btn-danger" style="margin-top:4px;" onclick="deleteAlbumPhoto()">🗑️ この写真を削除する</button>
     </div>
   </div>
 </div>
@@ -689,7 +705,7 @@
   const LIFF_ID              = '2010101999-lNupzNWJ';
   const DRIVE_ALBUM_FOLDER_ID    = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
   const DRIVE_SCHEDULE_FOLDER_ID = '1OSgA9xlWdSFxaHaKthzqFht0jnnDuNfP';
-  const LOG_LIMIT            = 30; //送信履歴に表示する件数
+  const LOG_LIMIT            = 20;
 
   // ===========================
   // キャラクター名・アイコンを画面に反映
@@ -721,6 +737,16 @@
     editId: null,
     editPeriod: 'week'
   };
+
+  // ===========================
+  // 処理中オーバーレイ
+  // ===========================
+  function showProcessing() {
+    document.getElementById('processing-overlay').style.display = 'flex';
+  }
+  function hideProcessing() {
+    document.getElementById('processing-overlay').style.display = 'none';
+  }
 
   async function initLiff() {
     applyCharSettings();
@@ -954,6 +980,7 @@
   }
 
   async function saveEdit() {
+    showProcessing();
     try {
       const res = await fetch(GAS_URL, {
         method: 'POST',
@@ -969,15 +996,18 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
+      hideProcessing();
       alert('保存しました！');
       showSchedule(state.editPeriod);
     } catch (err) {
+      hideProcessing();
       alert('保存に失敗しました: ' + err.message);
     }
   }
 
   async function deleteSchedule() {
     if (!confirm('この予定を削除しますか？')) return;
+    showProcessing();
     try {
       const res = await fetch(GAS_URL, {
         method: 'POST',
@@ -985,9 +1015,11 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
+      hideProcessing();
       alert('削除しました！');
       showSchedule(state.editPeriod);
     } catch (err) {
+      hideProcessing();
       alert('削除に失敗しました: ' + err.message);
     }
   }
@@ -1036,7 +1068,11 @@
     albumLoading = false;
     albumHasMore = true;
     showScreen('album');
-    document.getElementById('photo-grid').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+    // スケルトンローディング表示
+    const skeletons = Array(9).fill(0).map(() =>
+      `<div style="aspect-ratio:1; background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size:200% 100%; border-radius:6px; animation:skeleton 1.2s infinite;"></div>`
+    ).join('');
+    document.getElementById('photo-grid').innerHTML = skeletons;
     document.getElementById('album-folder-link').href = 
       `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
     await loadMorePhotos();
@@ -1173,6 +1209,28 @@
       moveAlbumPopup(diff > 0 ? 1 : -1);
     }
   });
+
+  async function deleteAlbumPhoto() {
+    if (!confirm('この写真をアルバムから削除しますか？')) return;
+    const p = popupPhotos[currentPopupIndex];
+    if (!p) return;
+    showProcessing();
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteAlbum', fileUrl: p.fileUrl })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      hideProcessing();
+      alert('削除しました！');
+      document.getElementById('album-popup-overlay').style.display = 'none';
+      showAlbum(); // アルバムを再読み込み
+    } catch (err) {
+      hideProcessing();
+      alert('削除に失敗しました: ' + err.message);
+    }
+  }
 
   function filterSchedule() {
     const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
