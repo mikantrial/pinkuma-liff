@@ -123,6 +123,11 @@ function doPost(e) {
       return ContentService
         .createTextOutput(JSON.stringify(handleGetAlbum(body)))
         .setMimeType(ContentService.MimeType.JSON);
+
+    } else if (body.action === 'deleteAlbum') {
+      return ContentService
+        .createTextOutput(JSON.stringify(handleDeleteAlbum(body)))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
   } catch (err) {
@@ -310,6 +315,24 @@ function handleGetAlbum(body) {
     total: results.length,
     albumFolderUrl: `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`
   };
+}
+
+// ===========================
+// 思い出アルバム削除
+// ===========================
+function handleDeleteAlbum(body) {
+  const { fileUrl } = body;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('DB');
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][11] === fileUrl && data[i][4] === 'album') {
+      sheet.getRange(i + 1, 14).setValue('deleted');
+      return { success: true };
+    }
+  }
+  return { success: false, error: 'レコードが見つかりませんでした' };
 }
 
 // ===========================
@@ -937,7 +960,6 @@ function getHistory(userId) {
 
   const data = sheet.getDataRange().getValues();
 
-  // 該当ユーザーの履歴を取得（日数制限なし）
   const history = [];
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
@@ -945,7 +967,6 @@ function getHistory(userId) {
     history.push({ role: row[2], text: row[3] });
   }
 
-  // 直近HISTORY_LIMIT件だけ返す
   const recent = history.slice(-HISTORY_LIMIT);
   return recent.map(h => ({
     role: h.role,
@@ -960,7 +981,6 @@ function deleteOldHistory() {
 
   const data = sheet.getDataRange().getValues();
 
-  // ユーザーIDごとに行インデックスを収集
   const userRowsMap = {};
   for (let i = 1; i < data.length; i++) {
     const userId = data[i][0];
@@ -968,7 +988,6 @@ function deleteOldHistory() {
     userRowsMap[userId].push(i);
   }
 
-  // 直近HISTORY_LIMIT件を超えた古いものだけ削除
   const deleteIndexes = [];
   Object.keys(userRowsMap).forEach(userId => {
     const rows = userRowsMap[userId];
@@ -978,7 +997,6 @@ function deleteOldHistory() {
     }
   });
 
-  // 後ろから削除（行番号がずれないように）
   deleteIndexes.sort((a, b) => b - a);
   deleteIndexes.forEach(i => sheet.deleteRow(i + 1));
 }
