@@ -1086,8 +1086,7 @@
     if (albumLoading || !albumHasMore) return;
     albumLoading = true;
     if (albumOffset === 0) {
-      document.getElementById('photo-grid').innerHTML = '';
-      popupPhotos = []; // 最初の読み込み時にリセット
+      popupPhotos = []; // 最初の読み込み時にリセット（スケルトンはそのまま残す）
     }
     try {
       const res = await fetch(GAS_URL, {
@@ -1101,6 +1100,11 @@
         grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
         albumHasMore = false;
         return;
+      }
+
+      // 最初の読み込み時はスケルトンをクリア
+      if (albumOffset === 0) {
+        grid.innerHTML = '';
       }
       data.photos.forEach(p => {
         const index = popupPhotos.length; // 追加前のlengthがこの写真のindex
