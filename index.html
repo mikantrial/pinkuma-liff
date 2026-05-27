@@ -448,6 +448,7 @@
   </style>
 </head>
 <body>
+<button class="home-btn" id="back-btn" onclick="backFromEdit()" style="right:80px; display:none;">← 一覧へ</button>
 <button class="home-btn" id="home-btn" onclick="showScreen('top')">🏠 ホーム</button>  
 
 <!-- TOP画面 -->
@@ -635,7 +636,6 @@
   </div>
   <button class="btn-primary" onclick="saveEdit()">💾 保存する</button>
   <button class="btn-danger" onclick="deleteSchedule()">🗑️ 削除する</button>
-  <p class="back-link" onclick="showSchedule(state.editPeriod)">← 予定一覧に戻る</p>   
 </div>
 
 <!-- アルバム画面 -->
@@ -767,6 +767,13 @@
   };
 
   // ===========================
+  // 編集画面から一覧へ戻る
+  // ===========================
+  function backFromEdit() {
+    showSchedule(state.editPeriod);
+  }
+
+  // ===========================
   // トースト通知
   // ===========================
   let toastTimer = null;
@@ -813,11 +820,15 @@
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + name).classList.add('active');
     const homeBtn = document.getElementById('home-btn');
+    const backBtn = document.getElementById('back-btn');
     if (name === 'top') {
       homeBtn.classList.remove('visible');
+      backBtn.style.display = 'none';
     } else {
       homeBtn.classList.add('visible');
-    }    
+      // 編集画面の時だけ「一覧へ」ボタンを表示
+      backBtn.style.display = (name === 'edit') ? 'block' : 'none';
+    }
   }
 
   function selectKind(kind) {
