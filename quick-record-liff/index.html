@@ -580,80 +580,85 @@
 <!-- 詳細・編集画面 -->
 <div id="screen-detail" class="screen">
   <div class="screen-title">📄 詳細・編集</div>
+  <div id="detail-loading" style="text-align:center; padding:40px; color:#aaa; font-size:14px;">
+    読み込み中...
+  </div>
+  <div id="detail-content" style="display:none;">
+	  <div class="edit-field">
+	    <label>タイトル</label>
+	    <input type="text" id="detail-title">
+	  </div>
+	  <div class="edit-field">
+	    <label>メモ</label>
+	    <textarea id="detail-memo" rows="3"></textarea>
+	  </div>
+	  <div class="edit-field">
+	    <label>登録日</label>
+	    <input type="date" id="detail-date">
+	  </div>
+	  <div class="edit-field">
+	    <label>登録者</label>
+	    <input type="text" id="detail-registrant" readonly style="color:#888;">
+	  </div>
+	  <div class="edit-field">
+	    <label>担当者1</label>
+	    <select id="detail-assignee1"><option value="">なし</option></select>
+	  </div>
+	  <div class="edit-field">
+	    <label>担当者2</label>
+	    <select id="detail-assignee2"><option value="">なし</option></select>
+	  </div>
+	  <div class="edit-field">
+	    <label>ステータス</label>
+	    <select id="detail-status">
+			<option value="">未設定</option>
+		</select>
+	  </div>
+	  <!-- <div class="edit-field">
+	    <label>カテゴリ</label>
+	    <div id="detail-category" style="font-size:13px; color:#555; padding:4px 0;"></div>
+	  </div> -->
+	  <div class="edit-field">
+		<label>カテゴリ</label>
+		<div id="detail-category" style="font-size:13px; color:#555; padding:4px 0; margin-bottom:8px;"></div>
+		<div style="font-size:11px; color:#888; margin-bottom:4px;">カテゴリを変更する</div>
+		<select id="detail-large-cat" onchange="onDetailLargeCatChange()"
+			style="width:100%; margin-bottom:6px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+			<option value="">大カテゴリを選択</option>
+		</select>
+		<select id="detail-small-cat"
+			style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+			<option value="">小カテゴリを選択</option>
+		</select>
+	  </div>
+	  <!-- <div class="edit-field">
+	    <label>AI解析内容</label>
+	    <div id="detail-ai-summary" style="font-size:13px; color:#555; padding:4px 0; line-height:1.6;"></div>
+	  </div> -->
+	  <!-- <div class="edit-field">
+	    <label>Driveフォルダ</label>
+	    <a id="detail-folder-link" href="#" target="_blank"
+	      style="font-size:13px; color:#4CAF50;">📁 Driveで開く</a>
+	  </div> -->
 
-  <div class="edit-field">
-    <label>タイトル</label>
-    <input type="text" id="detail-title">
-  </div>
-  <div class="edit-field">
-    <label>メモ</label>
-    <textarea id="detail-memo" rows="3"></textarea>
-  </div>
-  <div class="edit-field">
-    <label>登録日</label>
-    <input type="date" id="detail-date">
-  </div>
-  <div class="edit-field">
-    <label>登録者</label>
-    <input type="text" id="detail-registrant" readonly style="color:#888;">
-  </div>
-  <div class="edit-field">
-    <label>担当者1</label>
-    <select id="detail-assignee1"><option value="">なし</option></select>
-  </div>
-  <div class="edit-field">
-    <label>担当者2</label>
-    <select id="detail-assignee2"><option value="">なし</option></select>
-  </div>
-  <div class="edit-field">
-    <label>ステータス</label>
-    <select id="detail-status">
-		<option value="">未設定</option>
-	</select>
-  </div>
-  <!-- <div class="edit-field">
-    <label>カテゴリ</label>
-    <div id="detail-category" style="font-size:13px; color:#555; padding:4px 0;"></div>
-  </div> -->
-  <div class="edit-field">
-	<label>カテゴリ</label>
-	<div id="detail-category" style="font-size:13px; color:#555; padding:4px 0; margin-bottom:8px;"></div>
-	<div style="font-size:11px; color:#888; margin-bottom:4px;">カテゴリを変更する</div>
-	<select id="detail-large-cat" onchange="onDetailLargeCatChange()"
-		style="width:100%; margin-bottom:6px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
-		<option value="">大カテゴリを選択</option>
-	</select>
-	<select id="detail-small-cat"
-		style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
-		<option value="">小カテゴリを選択</option>
-	</select>
-  </div>
-  <!-- <div class="edit-field">
-    <label>AI解析内容</label>
-    <div id="detail-ai-summary" style="font-size:13px; color:#555; padding:4px 0; line-height:1.6;"></div>
-  </div> -->
-  <!-- <div class="edit-field">
-    <label>Driveフォルダ</label>
-    <a id="detail-folder-link" href="#" target="_blank"
-      style="font-size:13px; color:#4CAF50;">📁 Driveで開く</a>
-  </div> -->
+	  <div style="margin-top:12px;">
+	    <div class="screen-title" style="font-size:14px;">📎 添付ファイル</div>
+	    <div id="detail-files"></div>
+	    <div class="form-group" style="margin-top:8px;">
+	      <label class="file-btn" for="detail-add-file">＋ ファイルを追加</label>
+	      <input type="file" id="detail-add-file"
+	        accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	        multiple onchange="onDetailFileSelected(this)">
+	      <div class="file-list" id="detail-add-file-list"></div>
+	    </div>
+	  </div>
+	
+	  <button class="btn-submit" onclick="saveDetail()">💾 保存する</button>
+	  <button class="btn-danger" onclick="deleteRecord()">🗑️ 削除する</button>
+	  <p class="back-link" onclick="state.previousScreen === 'records-pc' ? showRecordsPC() : showRecords()">← 一覧に戻る</p>
 
-  <div style="margin-top:12px;">
-    <div class="screen-title" style="font-size:14px;">📎 添付ファイル</div>
-    <div id="detail-files"></div>
-    <div class="form-group" style="margin-top:8px;">
-      <label class="file-btn" for="detail-add-file">＋ ファイルを追加</label>
-      <input type="file" id="detail-add-file"
-        accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        multiple onchange="onDetailFileSelected(this)">
-      <div class="file-list" id="detail-add-file-list"></div>
-    </div>
-  </div>
-
-  <button class="btn-submit" onclick="saveDetail()">💾 保存する</button>
-  <button class="btn-danger" onclick="deleteRecord()">🗑️ 削除する</button>
-  <p class="back-link" onclick="state.previousScreen === 'records-pc' ? showRecordsPC() : showRecords()">← 一覧に戻る</p>
-</div>
+	</div><!-- detail-content -->
+</div><!-- screen-detail -->
 
 <!-- 送信履歴画面 -->
 <div id="screen-log" class="screen screen-flex">
@@ -1245,11 +1250,13 @@
     // 遷移元の画面を記録
     const currentScreen = document.querySelector('.screen.active');
     if (currentScreen) {
-      state.previousScreen = currentScreen.id.replace('screen-', '');
+    	state.previousScreen = currentScreen.id.replace('screen-', '');
     }
     state.currentRecordId = id;
     state.additionalFiles = [];
     document.getElementById('detail-add-file-list').innerHTML = '';
+    document.getElementById('detail-loading').style.display = 'block';
+    document.getElementById('detail-content').style.display = 'none';
     showScreen('detail');
 
     try {
@@ -1304,7 +1311,11 @@
           fileDiv.appendChild(card);
         });
       }
+      document.getElementById('detail-loading').style.display = 'none';
+      document.getElementById('detail-content').style.display = 'block';
     } catch (err) {
+      document.getElementById('detail-loading').style.display = 'none';
+      document.getElementById('detail-content').style.display = 'block';		
       alert('読み込みに失敗しました: ' + err.message);
     }
   }
