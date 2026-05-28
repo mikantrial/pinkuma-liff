@@ -464,6 +464,10 @@
       <span class="btn-icon">⚙️</span>
       <span>設定（登録者名の変更）</span>
     </button>
+	<button class="top-btn btn-gray" onclick="showScreen('howto')">
+	  <span class="btn-icon">❓</span>
+	  <span>使い方</span>
+	</button>
   </div>
 </div>
 
@@ -739,6 +743,55 @@
     <input type="text" id="settings-name" placeholder="名前を入力してください">
   </div>
   <button class="btn-submit" onclick="saveSettings()">💾 保存する</button>
+</div>
+
+<!-- 使い方画面 -->
+<div id="screen-howto" class="screen">
+  <div class="screen-title">❓ 使い方</div>
+
+  <div class="record-item" style="margin-bottom:8px;">
+    <div class="record-title">✏️ 新しく記録する</div>
+    <div class="record-memo" style="margin-top:6px;">
+      タイトル・メモ・登録日・登録者・担当者・カテゴリを入力して送信します。<br><br>
+      📎 ファイル添付：画像・PDF・Word・Excel・PowerPoint（複数可）<br><br>
+      画像・PDF・Officeファイルの内容はAIが自動で解析してサマリーを作成します。
+      メモを追加するとより正確になります。
+    </div>
+  </div>
+
+  <div class="record-item" style="margin-bottom:8px;">
+    <div class="record-title">📋 記録を見る・編集・削除</div>
+    <div class="record-memo" style="margin-top:6px;">
+      登録した記録の一覧を表示します。<br><br>
+      カテゴリ・ステータス・登録者・担当者・キーワードで絞り込みができます。<br><br>
+      記録をタップすると詳細・編集画面が開きます。タイトル・メモ・担当者・ステータス・カテゴリの変更やファイルの追加・削除ができます。
+    </div>
+  </div>
+
+  <div class="record-item" style="margin-bottom:8px;">
+    <div class="record-title">🖥️ 記録を見る・編集・削除（PC用）</div>
+    <div class="record-memo" style="margin-top:6px;">
+      PCブラウザでの閲覧に適したテーブル形式の一覧画面です。<br><br>
+      フィルターやキーワード検索、件数表示に対応しています。
+    </div>
+  </div>
+
+  <div class="record-item" style="margin-bottom:8px;">
+    <div class="record-title">🕐 送信履歴</div>
+    <div class="record-memo" style="margin-top:6px;">
+      最近登録した記録の履歴を20件まで表示します。<br><br>
+      ⚠️ マークが表示されている場合は送信に失敗しています。もう一度登録してください。
+    </div>
+  </div>
+
+  <div class="record-item" style="margin-bottom:8px;">
+    <div class="record-title">💬 ダイレクトチャットで質問する</div>
+    <div class="record-memo" style="margin-top:6px;">
+      LINEのトーク画面から直接話しかけると、登録されている記録をもとにAIが答えます。<br><br>
+      例）「未対応の記録を教えて」<br>
+      例）「田中さんが担当している記録は？」
+    </div>
+  </div>
 </div>
 
 <!-- 処理中オーバーレイ -->
