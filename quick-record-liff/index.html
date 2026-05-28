@@ -366,6 +366,32 @@
       vertical-align: middle;
     }
 
+	/* トースト通知 */
+	.toast {
+	  position: fixed;
+	  top: 20px;
+	  left: 50%;
+	  transform: translateX(-50%);
+	  padding: 10px 20px;
+	  border-radius: 16px;
+	  font-size: 13px;
+	  font-weight: bold;
+	  color: white;
+	  z-index: 500;
+	  opacity: 0;
+	  transition: opacity 0.3s;
+	  text-align: center;
+	  width: calc(100% - 48px);
+	  max-width: 320px;
+	  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+	  pointer-events: none;
+	  white-space: pre-line;
+	}
+	.toast.success { background: #4CAF50; }
+	.toast.error   { background: #e53935; }
+	.toast.info    { background: #FF9800; }
+	.toast.show    { opacity: 1; }
+	  
   </style>
 </head>
 <body>
@@ -678,6 +704,9 @@
   <button class="btn-submit" onclick="saveSettings()">💾 保存する</button>
 </div>
 
+<!-- トースト通知 -->
+<div id="toast" class="toast"></div>
+
 <script>
   //const GAS_URL = 'https://script.google.com/macros/s/AKfycbzskiGwd0hn9PikxwpqBH2rknq_6hgvYFmykaXqY-p6JrcIwoUoxB0tyQ4Q54BpvoA7/exec'; //【設定シートのGAS_URLの値を貼り付け】
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbymgyImIBlB_ORavBex3WxZb_dNX30PS_MkGK70F9AmCaCI06BpFcV6SLZoWOlUqkM/exec';
@@ -694,6 +723,20 @@
     allRecords: [],
     previousScreen: 'records'
   };
+
+  // ===========================
+  // トースト通知
+  // ===========================
+  let toastTimer = null;
+  function showToast(message, type = 'success', duration = 2500) {
+	  const toast = document.getElementById('toast');
+	  toast.textContent = message;
+	  toast.className = `toast ${type} show`;
+	  if (toastTimer) clearTimeout(toastTimer);
+	  toastTimer = setTimeout(() => {
+		toast.classList.remove('show');
+	  }, duration);
+  }
 
   // ===========================
   // 初期化
@@ -1006,13 +1049,13 @@
   async function submitRecord() {
     const title = document.getElementById('input-title').value.trim();
     if (!title) {
-      alert('タイトルを入力してください');
+      showToast('タイトルを入力してください', 'info');
       return;
     }
     const largeCat = document.getElementById('input-large-cat').value;
     const smallCat = document.getElementById('input-small-cat').value;
     if (!largeCat || !smallCat) {
-      alert('カテゴリを選択してください');
+      showToast('カテゴリを選択してください', 'info');
       return;
     }
 
@@ -1023,7 +1066,7 @@
 	}
 
     if (!registrantName) {
-      alert('登録者名を入力または選択してください');
+      showToast('登録者名を入力または選択してください', 'info');
       return;
     }
 
@@ -1057,7 +1100,7 @@
 
       showScreen('complete');
     } catch (err) {
-      alert('送信に失敗しました: ' + err.message);
+      showToast('送信に失敗しました', 'error');
       showScreen('input');
     }
   }
@@ -1316,7 +1359,7 @@
     } catch (err) {
       document.getElementById('detail-loading').style.display = 'none';
       document.getElementById('detail-content').style.display = 'block';		
-      alert('読み込みに失敗しました: ' + err.message);
+      showToast('読み込みに失敗しました', 'error');
     }
   }
 
@@ -1362,9 +1405,10 @@
       // ③ 結果を通知
       btn.disabled = false;
       if (data.folderMoveError) {
-      alert('カテゴリとデータは保存しましたが、Driveフォルダの移動に失敗しました。Driveを手動で確認してください。');
+      	// alert('カテゴリとデータは保存しましたが、Driveフォルダの移動に失敗しました。Driveを手動で確認してください。');
+	  	showToast('カテゴリは保存しましたが、Driveフォルダの移動に失敗しました。', 'info');
       } else {
-      alert('保存しました！');
+      	showToast('保存しました！');
       }
       // showRecords();
       if (state.previousScreen === 'records-pc') {
@@ -1375,7 +1419,7 @@
     } catch (err) {
       btn.disabled = false;
       showScreen('detail');
-      alert('保存に失敗しました: ' + err.message);		
+      showToast('保存に失敗しました', 'error');
     }
   }
 
@@ -1388,7 +1432,7 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      alert('削除しました！');
+      showToast('削除しました！');
       // showRecords();
       if (state.previousScreen === 'records-pc') {
         showRecordsPC();
@@ -1396,7 +1440,7 @@
         showRecords();
       }
     } catch (err) {
-      alert('削除に失敗しました: ' + err.message);
+      showToast('削除に失敗しました', 'error');
     }
   }
 
@@ -1411,7 +1455,7 @@
       if (!data.success) throw new Error(data.error);
       showDetail(state.currentRecordId);
     } catch (err) {
-      alert('削除に失敗しました: ' + err.message);
+      showToast('削除に失敗しました', 'error');
     }
   }
 
@@ -1489,11 +1533,11 @@
   function saveSettings() {
     const name = document.getElementById('settings-name').value.trim();
     if (!name) {
-      alert('名前を入力してください');
+      showToast('名前を入力してください', 'info');
       return;
     }
     localStorage.setItem('registrantName', name);
-    alert('保存しました！');
+    showToast('保存しました！');
     showScreen('top');
   }
 
@@ -1502,3 +1546,6 @@
   // ===========================
   initLiff();
 </script>
+
+</body>
+</html>
