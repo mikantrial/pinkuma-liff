@@ -391,7 +391,43 @@
 	.toast.error   { background: #e53935; }
 	.toast.info    { background: #FF9800; }
 	.toast.show    { opacity: 1; }
-	  
+
+	/* 処理中オーバーレイ */
+	@keyframes spin {
+	  to { transform: rotate(360deg); }
+	}
+	.processing-overlay {
+	  display: none;
+	  position: fixed;
+	  top: 0; left: 0; right: 0; bottom: 0;
+	  background: rgba(0,0,0,0.4);
+	  z-index: 400;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: center;
+	}
+	.processing-overlay.show { display: flex; }
+	.processing-spinner {
+	  background: white;
+	  border-radius: 12px;
+	  padding: 28px 36px;
+	  text-align: center;
+	  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+	}
+	.processing-spinner .spinner {
+	  width: 36px;
+	  height: 36px;
+	  border: 4px solid #eee;
+	  border-top-color: #4CAF50;
+	  border-radius: 50%;
+	  animation: spin 0.8s linear infinite;
+	  margin: 0 auto 12px;
+	}
+	.processing-spinner .label {
+	  font-size: 14px;
+	  font-weight: bold;
+	  color: #333;
+	}
   </style>
 </head>
 <body>
@@ -704,6 +740,13 @@
   <button class="btn-submit" onclick="saveSettings()">💾 保存する</button>
 </div>
 
+<!-- 処理中オーバーレイ -->
+<div id="processing-overlay" class="processing-overlay">
+  <div class="processing-spinner">
+    <div class="spinner"></div>
+    <div class="label">処理中...</div>
+  </div>
+</div>
 <!-- トースト通知 -->
 <div id="toast" class="toast"></div>
 
@@ -737,6 +780,16 @@
 		toast.classList.remove('show');
 	  }, duration);
   }
+	
+  // ===========================
+  // 処理中オーバーレイ
+  // ===========================
+  function showProcessing() {
+	  document.getElementById('processing-overlay').classList.add('show');
+  }
+  function hideProcessing() {
+	  document.getElementById('processing-overlay').classList.remove('show');
+  }	
 
   // ===========================
   // 初期化
@@ -1366,7 +1419,7 @@
   async function saveDetail() {
     const btn = document.querySelector('#screen-detail .btn-submit');
     btn.disabled = true;
-    showScreen('loading');	
+    showProcessing();
     try {
       // ① テキスト項目・カテゴリ・ステータスを保存
       const res = await fetch(GAS_URL, {
@@ -1404,6 +1457,7 @@
 
       // ③ 結果を通知
       btn.disabled = false;
+      hideProcessing();
       if (data.folderMoveError) {
       	// alert('カテゴリとデータは保存しましたが、Driveフォルダの移動に失敗しました。Driveを手動で確認してください。');
 	  	showToast('カテゴリは保存しましたが、Driveフォルダの移動に失敗しました。', 'info');
@@ -1418,6 +1472,7 @@
       }
     } catch (err) {
       btn.disabled = false;
+	  hideProcessing();
       showScreen('detail');
       showToast('保存に失敗しました', 'error');
     }
