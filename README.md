@@ -1,2 +1,2 @@
-# pinkuma-liff
+# Memo
 LIFFのHTML
