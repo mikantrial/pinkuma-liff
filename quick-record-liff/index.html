@@ -664,16 +664,40 @@
 	    <input type="date" id="detail-date">
 	  </div>
 	  <div class="edit-field">
-	    <label>登録者</label>
-	    <input type="text" id="detail-registrant" readonly style="color:#888;">
+		  <label>登録者</label>
+		  <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+			<select id="detail-registrant-select" onchange="onDetailUserSelectChange('detail-registrant-select','detail-registrant-text')"
+			  style="flex:1; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px; background:white;">
+			  <option value="">候補から選ぶ</option>
+			</select>
+			<span style="color:#aaa; font-size:18px;">→</span>
+			<input type="text" id="detail-registrant-text" placeholder="登録者名"
+			  style="flex:1;">
+		  </div>
 	  </div>
 	  <div class="edit-field">
-	    <label>担当者1</label>
-	    <select id="detail-assignee1"><option value="">なし</option></select>
+		  <label>担当者1</label>
+		  <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+		    <select id="detail-assignee1-select" onchange="onDetailUserSelectChange('detail-assignee1-select','detail-assignee1-text')"
+		      style="flex:1; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px; background:white;">
+		      <option value="">候補から選ぶ</option>
+		    </select>
+		    <span style="color:#aaa; font-size:18px;">→</span>
+		    <input type="text" id="detail-assignee1-text" placeholder="担当者1"
+		      style="flex:1;">
+		  </div>
 	  </div>
 	  <div class="edit-field">
 	    <label>担当者2</label>
-	    <select id="detail-assignee2"><option value="">なし</option></select>
+		<div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+			<select id="detail-assignee2-select" onchange="onDetailUserSelectChange('detail-assignee2-select','detail-assignee2-text')"
+			  style="flex:1; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px; background:white;">
+			  <option value="">候補から選ぶ</option>
+			</select>
+			<span style="color:#aaa; font-size:18px;">→</span>
+			<input type="text" id="detail-assignee2-text" placeholder="担当者2（なしの場合は空欄）"
+			  style="flex:1;">
+		</div>
 	  </div>
 	  <div class="edit-field">
 	    <label>ステータス</label>
@@ -1052,6 +1076,14 @@
 	}
   }
 
+	function onDetailUserSelectChange(selectId, textId) {
+	  const sel = document.getElementById(selectId);
+	  if (sel.value) {
+		document.getElementById(textId).value = sel.value;
+		sel.value = '';
+	  }
+	}
+
   // ===========================
   // ステータス選択肢の構築
   // ===========================
@@ -1422,7 +1454,8 @@
       document.getElementById('detail-title').value = r.title || '';
       document.getElementById('detail-memo').value = r.memo || '';
       document.getElementById('detail-date').value = r.registeredDate || '';
-      document.getElementById('detail-registrant').value = r.registrantName || '';
+      // document.getElementById('detail-registrant').value = r.registrantName || '';
+      document.getElementById('detail-registrant-text').value = r.registrantName || '';
       document.getElementById('detail-status').value = r.status || '';
       document.getElementById('detail-category').textContent =
         `${r.largeCat} > ${r.smallCat}`;
@@ -1439,9 +1472,15 @@
     //   document.getElementById('detail-folder-link').href = r.driveFolderUrl || '#';
 
       // 担当者選択肢
-      buildUserOptions('detail-assignee1', r.assignee1 || '');
-      buildUserOptions('detail-assignee2', r.assignee2 || '');
-
+      // buildUserOptions('detail-assignee1', r.assignee1 || '');
+      // buildUserOptions('detail-assignee2', r.assignee2 || '');
+      // 担当者・登録者の候補選択肢
+      buildUserOptions('detail-registrant-select', '');
+      buildUserOptions('detail-assignee1-select', '');
+      buildUserOptions('detail-assignee2-select', '');
+      document.getElementById('detail-assignee1-text').value = r.assignee1 || '';
+      document.getElementById('detail-assignee2-text').value = r.assignee2 || '';
+		
       // ファイル一覧
       const fileDiv = document.getElementById('detail-files');
       if (data.files.length === 0) {
@@ -1485,8 +1524,11 @@
         title: document.getElementById('detail-title').value,
         memo: document.getElementById('detail-memo').value,
         registeredDate: document.getElementById('detail-date').value,
-        assignee1: document.getElementById('detail-assignee1').value,
-        assignee2: document.getElementById('detail-assignee2').value,
+        // assignee1: document.getElementById('detail-assignee1').value,
+        // assignee2: document.getElementById('detail-assignee2').value,
+        registrantName: document.getElementById('detail-registrant-text').value,
+        assignee1: document.getElementById('detail-assignee1-text').value,
+        assignee2: document.getElementById('detail-assignee2-text').value,		  
         status: document.getElementById('detail-status').value,
         newLargeCat: document.getElementById('detail-large-cat').value,
         newSmallCat: document.getElementById('detail-small-cat').value
