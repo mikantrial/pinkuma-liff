@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">カビさん</title>
+  <meta property="og:title" content="カビさん">
+  <meta property="og:description" content="送るだけで自動整理するよ！">
+  <meta property="og:image" content="https://mikantrial.github.io/ai-product/pinkuma-liff/pinkuma_ogp.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"> 	
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"> 	
+</script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    .screen { display: none; padding: 12px 16px; }
+    .screen.active { display: block; }
+
+    /* TOP画面 */
+    .top-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .top-header h1 { font-size: 18px; color: #333; }
+    .top-header p { font-size: 12px; color: #888; }
+    .top-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .top-btn {
+      padding: 14px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: opacity 0.2s;
+    }
+    .top-btn:active { opacity: 0.7; }
+    .top-btn .btn-icon { font-size: 24px; }
+
+    .btn-album { background: #FFE0B2; color: #E65100; }
+    .btn-album-view { background: #FFE0B2; color: #E65100; }
+    .btn-schedule { background: #BBDEFB; color: #1565C0; }
+    .btn-view { background: #BBDEFB; color: #1565C0; }
+
+    /* 入力画面 */
+    .screen-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group { margin-bottom: 12px; }
+    label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: none;
+      height: 112px;
+      font-family: inherit;
+    }
+    textarea:focus { outline: none; border-color: #4CAF50; }
+    .file-btn {
+      display: inline-block;
+      padding: 8px 14px;
+      background: #f0f0f0;
+      border: 1px dashed #aaa;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #555;
+    }
+    input[type="file"] { display: none; }
+    .file-list {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #444;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .file-item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-remove {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* ボタン */
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-primary:active { opacity: 0.8; }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* 送信中 */
+    .loading-wrap {
+      text-align: center;
+      padding: 40px 0;
+      color: #888;
+    }
+    .loading-wrap .icon { font-size: 40px; margin-bottom: 12px; }
+    .loading-wrap .text {
+      font-size: 15px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .loading-wrap .sub { font-size: 12px; }
+
+    /* 完了画面 */
+    .complete-wrap {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .complete-wrap .icon { font-size: 56px; margin-bottom: 12px; }
+    .complete-wrap .text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .complete-wrap .sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .complete-wrap .count {
+      font-size: 13px;
+      color: #4CAF50;
+      margin-top: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* 予定一覧画面 */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+      color: #666;
+    }
+    .tab-btn.active {
+      background: #4CAF50;
+      color: white;
+      border-color: #4CAF50;
+      font-weight: bold;
+    }
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+    .schedule-item {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .schedule-date {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 2px;
+    }
+    .schedule-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+    .schedule-content {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+    .schedule-empty {
+      text-align: center;
+      padding: 24px;
+      color: #aaa;
+      font-size: 14px;
+    }
+    .schedule-link { margin-top: 4px; }
+    .schedule-link a {
+      font-size: 12px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+    .btn-log { background: #F3E5F5; color: #6A1B9A; }
+    .btn-sub { background: #F5F0E8; color: #8D6E63; }
+    .screen-flex {
+      height: 100vh;
+      flex-direction: column;
+      padding: 12px 16px;
+    }
+    .screen-flex.active { display: flex; }
+    
+    /* 編集画面 */
+    .edit-field {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .edit-field label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .edit-field input,
+    .edit-field textarea {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #eee;
+      padding: 4px 0;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+    }
+    .edit-field input:focus,
+    .edit-field textarea:focus {
+      outline: none;
+      border-bottom-color: #4CAF50;
+    }
+    .btn-danger {
+      width: 100%;
+      padding: 14px;
+      background: white;
+      color: #e53935;
+      border: 1px solid #e53935;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* アルバム画面 */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .photo-item {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #eee;
+    }
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.45);
+      padding: 4px 6px;
+    }
+    .photo-overlay-title {
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-more {
+      width: 100%;
+      padding: 12px;
+      background: white;
+      color: #4CAF50;
+      border: 1px solid #4CAF50;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* スケルトンアニメーション */
+    @keyframes skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    /* スピナーアニメーション */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    /* トースト通知 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: bold;
+      color: white;
+      z-index: 500;
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: pre-line;
+      text-align: center;
+      width: calc(100% - 48px);
+      max-width: 320px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+    .toast.success { background: #4CAF50; }
+    .toast.error   { background: #e53935; }
+    .toast.info    { background: #FF9800; }
+    .toast.show    { opacity: 1; }
+
+    /* ホームへ戻る */
+    .home-btn {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #666;
+      cursor: pointer;
+      z-index: 100;
+      display: none;
+    }
+    /* .home-btn.visible は top-buttons-wrap で制御 */
+
+    /* アルバムポップアップ */
+    .album-popup-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .album-popup {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 360px;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+    .album-popup-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+    .album-popup-body { padding: 12px 16px; }
+    .album-popup-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .album-popup-content {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .album-popup-close {
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+<div id="top-buttons-wrap" style="position:fixed; top:12px; right:12px; display:none; gap:6px; z-index:100;">
+  <button class="home-btn" id="back-btn" onclick="backFromEdit()" style="position:static; display:none;">← 一覧へ</button>
+  <button class="home-btn" id="home-btn" onclick="showScreen('top')" style="position:static; display:none;">🏠 ホーム</button>
+</div>  
+
+<!-- TOP画面 -->
+<div id="screen-top" class="screen active">
+  <div class="top-header">
+    <h1 id="top-title"> 	
+</h1>
+    <p id="top-tagline"> 	
+</p>
+  </div>
+
+  <div style="display:flex; gap:10px; margin-bottom:10px;">
+    <button class="top-btn btn-album" 
+      style="flex:1; flex-direction:column; align-items:center; padding:16px 8px;"
+      onclick="selectKind('album')">
+      <span class="btn-icon">📷</span>
+      <span style="font-size:13px;">思い出写真を送る</span>
+    </button>
+    <button class="top-btn btn-schedule"
+      style="flex:1; flex-direction:column; align-items:center; padding:16px 8px;"
+      onclick="selectKind('schedule')">
+      <span class="btn-icon">📋</span>
+      <span style="font-size:13px;">予定・プリントを送る</span>
+    </button>
+  </div>
+
+  <div style="display:flex; gap:6px; margin-bottom:6px;">
+    <button class="top-btn btn-album-view"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="showAlbum()">
+      <span class="btn-icon" style="font-size:20px;">🖼️</span>
+      <span style="font-size:10px;">思い出アルバムを見る</span>
+    </button>
+    <button class="top-btn btn-view"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="showSchedule('week')">
+      <span class="btn-icon" style="font-size:20px;">📅</span>
+      <span style="font-size:10px;">予定を確認する</span>
+    </button>
+  </div>
+  
+  <div style="display:flex; gap:6px;">
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_SCHEDULE_FOLDER_ID}`, '_blank')">
+      <span class="btn-icon" style="font-size:20px;">📄</span>
+      <span style="font-size:10px;">プリント画像</span>
+    </button>
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="window.open(`https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`, '_blank')">
+      <span class="btn-icon" style="font-size:20px;">🎥</span>
+      <span style="font-size:10px;">動画のアップ</span>
+    </button>
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="showRecentPosts()">
+      <span class="btn-icon" style="font-size:20px;">📋</span>
+      <span style="font-size:10px;">送信履歴</span>
+    </button>
+    <button class="top-btn btn-sub"
+      style="flex:1; flex-direction:column; align-items:center; padding:12px 2px;"
+      onclick="showScreen('howto')">
+      <span class="btn-icon" style="font-size:20px;">❓</span>
+      <span style="font-size:10px;">使い方</span>
+    </button>
+  </div>
+</div>
+
+<!-- 入力画面 -->
+<div id="screen-input" class="screen">
+  <div class="screen-title">
+    <span id="input-icon"> 	
+</span>
+    <span id="input-title-label"> 	
+</span>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>ファイル添付（複数選択可）</label>
+    <label class="file-btn" for="file-input">📎 ファイルを選ぶ</label>
+    <input type="file" id="file-input" 
+      accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/msword"
+      multiple onchange="onFileSelected(this)">
+    <div class="file-list" id="file-list"> 	
+</div>
+    <div id="file-input-note" style="font-size:11px; color:#888; margin-top:0;">
+      ※画像・PDF・Word・Excel・PowerPointを選択可
+    </div>    
+  </div>
+  <div class="form-group" id="video-input-group" style="display:none;margin-bottom:16px">
+    <label>動画添付（1個のみ・18MB以下）</label>
+    <label class="file-btn" for="video-input">🎥 動画を選ぶ</label>
+    <input type="file" id="video-input" accept="video/*"
+      onchange="onVideoSelected(this)">
+    <div id="video-file-list"> 	
+</div>
+    <div style="font-size:11px; color:#888; margin-top:0;">
+      ※18MBを超える動画は
+      <a id="video-drive-link" href="#" target="_blank" style="color:#4CAF50;">Googleドライブ</a>
+      から直接アップしてください
+    </div>
+    <div style="margin-top:12px;">
+      <label style="font-size:12px; color:#666;">GoogleドライブにアップしたURLを貼り付ける（任意）</label>
+      <input type="url" id="video-drive-url"
+        placeholder="https://drive.google.com/..."
+        style="width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; margin-top:4px;">
+    </div>
+  </div>
+  <div class="form-group" style="margin-bottom:16px">
+    <label>メモ・説明（任意）</label>
+    <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"> 	
+</textarea>
+    <div id="memo-input-note" style="font-size:11px; color:#888; margin-top:0;">
+      ※画像・PDF・Word・Excel・PowerPointは内容を自動で読み取ります。メモ・説明を追加するとより正確になります。<br>
+      ※動画はメモ欄に概要を入力してください。
+    </div>
+  </div>
+  <button class="btn-primary" onclick="submitFiles()">送信する</button>
+</div>
+
+<!-- 送信中画面 -->
+<div id="screen-loading" class="screen">
+  <div class="loading-wrap">
+    <div class="icon">📨</div>
+    <div class="text">送信中...</div>
+    <div class="sub">しばらくお待ちください</div>
+    <div class="sub" style="margin-top:8px; color:#e53935;">⚠️ 画面を閉じないでください</div>
+  </div>
+</div>
+
+<!-- 完了画面 -->
+<div id="screen-complete" class="screen">
+  <div class="complete-wrap">
+    <div class="icon" id="complete-icon"> 	
+</div>
+    <div class="text" id="complete-text"> 	
+</div>
+    <div class="sub">順番に整理するね</div>
+    <div style="margin-top:12px; padding:10px 16px; background:#FFF8E1; border-radius:8px; font-size:13px; color:#F57F17;">⏰ 整理が完了するまで数分かかります</div>
+    <div class="count" id="complete-count"> 	
+</div>
+  </div>
+</div>
+
+<!-- 予定一覧画面 -->
+<div id="screen-schedule" class="screen screen-flex">
+  <div class="screen-title">📅 予定を確認する</div>
+  <div class="form-group">
+    <input type="text" id="schedule-search" 
+      placeholder="🔍 キーワードで絞り込む"
+      oninput="filterSchedule()"
+      style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:8px;">
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-week" onclick="showSchedule('week')">1週間以内</button>
+    <button class="tab-btn" id="tab-month" onclick="showSchedule('month')">1ヶ月以内</button>
+    <button class="tab-btn" id="tab-all" onclick="showSchedule('all')">すべて</button>
+    <button class="tab-btn" id="tab-memo" onclick="showSchedule('memo')">メモ</button>
+  </div>
+  <div class="schedule-list" id="schedule-list">
+    <div class="schedule-empty">読み込み中...</div>
+  </div>
+</div>
+
+<!-- 履歴画面 -->
+<div id="screen-log" class="screen screen-flex">
+  <div class="screen-title">📋 最近の送信履歴 ※20件まで</div>
+  <div class="schedule-list" id="log-list">
+    <div class="schedule-empty">読み込み中...</div>
+  </div>
+</div>
+  
+<!-- 編集画面 -->
+<div id="screen-edit" class="screen">
+  <div class="screen-title">✏️ 編集</div>
+  <div class="edit-field">
+    <label>タイトル</label>
+    <input type="text" id="edit-title">
+  </div>
+  <div class="edit-field">
+    <label>AI解析内容</label>
+    <textarea id="edit-content" rows="3"> 	
+</textarea>
+  </div>
+  <div class="edit-field">
+    <label>担当者</label>
+    <input type="text" id="edit-assignee">
+  </div>
+  <div class="edit-field">
+    <label>予定日</label>
+    <input type="date" id="edit-scheduled-date">
+  </div>
+  <div class="edit-field">
+    <label>保管期限</label>
+    <input type="date" id="edit-retention">
+  </div>
+  <button class="btn-primary" onclick="saveEdit()">💾 保存する</button>
+  <button class="btn-danger" onclick="deleteSchedule()">🗑️ 削除する</button>
+</div>
+
+<!-- アルバム画面 -->
+<div id="screen-album" class="screen">
+  <div class="screen-title">📷 思い出アルバム</div>
+  <div class="photo-grid" id="photo-grid">
+    <div class="schedule-empty">読み込み中...</div>
+  </div>
+  <a id="album-folder-link" class="btn-more" target="_blank">
+    📁 Googleドライブで見る
+  </a>
+</div>
+
+<!-- トースト通知 -->
+<div id="toast" class="toast"> 	
+</div>
+
+<!-- 処理中オーバーレイ -->
+<div id="processing-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:400; flex-direction:column; align-items:center; justify-content:center;">
+  <div style="background:white; border-radius:12px; padding:28px 36px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+    <div style="width:36px; height:36px; border:4px solid #eee; border-top-color:#4CAF50; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px;"> 	
+</div>
+    <div style="font-size:14px; font-weight:bold; color:#333;">処理中...</div>
+  </div>
+</div>
+
+<!-- アルバムポップアップ -->
+<div id="album-popup-overlay" class="album-popup-overlay" style="display:none;" onclick="closeAlbumPopup(event)">
+  <div class="album-popup">
+    <div style="position:relative;">
+      <img id="album-popup-img" class="album-popup-img" src="" alt="">
+      <!-- 前へ・次へボタン -->
+      <button onclick="moveAlbumPopup(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
+      <button onclick="moveAlbumPopup(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
+      <!-- 枚数表示 -->
+      <div id="album-popup-counter" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.4);color:white;font-size:11px;padding:2px 8px;border-radius:10px;"> 	
+</div>
+    </div>
+    <div class="album-popup-body">
+      <div id="album-popup-title" class="album-popup-title"> 	
+</div>
+      <div id="album-popup-content" class="album-popup-content"> 	
+</div>
+      <a id="album-popup-link" class="btn-more" target="_blank">📁 ドライブで元の写真を開く</a>
+      <button class="album-popup-close" onclick="closeAlbumPopup()">× 閉じる</button>
+      <button class="btn-danger" style="margin-top:4px;" onclick="deleteAlbumPhoto()">🗑️ この写真を削除する</button>
+    </div>
+  </div>
+</div>
+  
+<!-- 使い方画面 -->
+<div id="screen-howto" class="screen">
+  <div class="screen-title">❓ 使い方</div>
+
+  <div class="schedule-item" style="margin-bottom:8px;">
+    <div class="schedule-title" id="howto-talk-title"> 	
+</div>
+    <div class="schedule-content" id="howto-talk-content" style="margin-top:6px;"> 	
+</div>
+  </div>
+
+  <div class="schedule-item" style="margin-bottom:8px;">
+    <div class="schedule-title">📷 思い出写真・動画を送る</div>
+    <div class="schedule-content" style="margin-top:6px;">
+      「思い出写真を送る」ボタンから送信してください。<br>
+      <br>
+      📎 ファイル添付：画像・PDF・Word・Excel・PowerPoint（複数可）<br>
+      🎥 動画：18MB以下のみ（1個のみ）。18MB超はGoogleドライブから直接アップ。<br>
+      <br>
+      画像・PDF・Word・Excel・PowerPointはAIが内容を自動で読み取りタイトルと説明文を作成します。<br>
+      動画はメモ欄に概要を入力してください。<br> 	
+<br>
+      思い出アルバムの画像は、撮影日時または投稿日時に応じて、Googleドライブの年月フォルダへ整理されます。
+    </div>
+  </div>
+
+  <div class="schedule-item" style="margin-bottom:8px;">
+    <div class="schedule-title">📋 予定・プリントを送る</div>
+    <div class="schedule-content" style="margin-top:6px;">
+      「予定・プリントを送る」ボタンから送信してください。<br>
+      <br>
+      📎 ファイル添付：画像・PDF・Word・Excel・PowerPoint（複数可）<br>
+      <br>
+      画像・PDF・Word・Excel・PowerPointはAIが自動で内容・予定日・担当者を読み取って整理します。<br>
+      ファイルなしで、メモ欄に「明日の歯医者 16:00 持ち物：保険証」のようにテキストだけでもOKです。
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===========================
+  // キャラクター設定（ここを変更してください）
+  // ===========================
+  const CHAR_NAME            = 'カビさん';
+  const CHAR_ICON            = '💤';
+  const CHAR_TAGLINE         = '送るだけで自動整理するよ！';
+  const CHAR_RECEIVE_MESSAGE = `${CHAR_NAME}が受け取ったよ！`;
+
+  // ===========================
+  // システム設定（ここを変更してください）
+  // ===========================
+  const GAS_URL              = 'https://script.google.com/macros/s/AKfycbxEpA075VxIatLkh3zchCalwzH7JzLMKIjuohE4FISq_idyHK7KVqf8bQzT3LuMT8o/exec';
+  const LIFF_ID              = '2010101999-lNupzNWJ';
+  const DRIVE_ALBUM_FOLDER_ID    = '1WxoFG8uqrFvWnKCsxCPejlYzuupI9tx0';
+  const DRIVE_SCHEDULE_FOLDER_ID = '1OSgA9xlWdSFxaHaKthzqFht0jnnDuNfP';
+  const LOG_LIMIT            = 20;
+
+  // ===========================
+  // キャラクター名・アイコンを画面に反映
+  // ===========================
+  function applyCharSettings() {
+    document.getElementById('page-title').textContent    = CHAR_NAME;
+    document.getElementById('top-title').textContent     = `${CHAR_ICON} ${CHAR_NAME}`;
+    document.getElementById('top-tagline').textContent   = CHAR_TAGLINE;
+    document.getElementById('complete-icon').textContent = CHAR_ICON;
+    document.getElementById('complete-text').textContent = CHAR_RECEIVE_MESSAGE;
+    document.getElementById('howto-talk-title').textContent = `${CHAR_ICON} ${CHAR_NAME}への話しかけ方`;
+    document.getElementById('howto-talk-content').innerHTML =
+      `${CHAR_NAME}に直接話しかけてください。<br>
+      予定の確認・雑談・写真へのコメントができます。<br>
+      <br>
+      例）「こんにちは」<br>
+      例）「今週の漢検の予定を教えて」<br>
+      例）「大阪旅行の写真が見たい」<br>
+      例）（写真を送る）→ ${CHAR_NAME}がコメントしてくれる`;
+  }
+
+  let state = {
+    kind: null,
+    userId: null,
+    userName: null,
+    files: [],
+    videoFile: null,
+    videoDriveUrl: null,
+    editId: null,
+    editPeriod: 'week'
+  };
+
+  // ===========================
+  // 編集画面から一覧へ戻る
+  // ===========================
+  function backFromEdit() {
+    showSchedule(state.editPeriod);
+  }
+
+  // ===========================
+  // トースト通知
+  // ===========================
+  let toastTimer = null;
+  function showToast(message, type = 'success', duration = 2500) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
+
+  // ===========================
+  // 処理中オーバーレイ
+  // ===========================
+  function showProcessing() {
+    document.getElementById('processing-overlay').style.display = 'flex';
+  }
+  function hideProcessing() {
+    document.getElementById('processing-overlay').style.display = 'none';
+  }
+
+  async function initLiff() {
+    applyCharSettings();
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      state.userId = profile.userId;
+      state.userName = profile.displayName;
+      document.getElementById('video-drive-link').href = 
+        `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
+    } catch (err) {
+      state.userId = 'unknown';
+      state.userName = '名前未取得';
+    }
+  }
+
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    const wrap    = document.getElementById('top-buttons-wrap');
+    const homeBtn = document.getElementById('home-btn');
+    const backBtn = document.getElementById('back-btn');
+    if (name === 'top') {
+      wrap.style.display = 'none';
+    } else {
+      wrap.style.display = 'flex';
+      homeBtn.style.display = 'block';
+      // 編集画面の時だけ「一覧へ」ボタンを表示
+      backBtn.style.display = (name === 'edit') ? 'block' : 'none';
+    }
+  }
+
+  function selectKind(kind) {
+    state.kind = kind;
+    state.files = [];
+    state.videoFile = null;
+    document.getElementById('original-text').value = '';
+    document.getElementById('file-list').innerHTML = '';
+    document.getElementById('file-input').value = '';
+    document.getElementById('video-file-list').innerHTML = '';
+    document.getElementById('video-input').value = '';
+    document.getElementById('video-drive-url').value = '';
+    if (kind === 'album') {
+      document.getElementById('input-icon').textContent = '📷';
+      document.getElementById('input-title-label').textContent = '思い出写真を送る';
+      document.getElementById('video-input-group').style.display = 'block';
+      document.getElementById('file-input-note').innerHTML =
+        '※画像を選択可';
+      document.getElementById('memo-input-note').innerHTML =
+        '※画像はAIが内容を自動で読み取りタイトルと説明文を作成します。メモ・説明を追加するとより正確になります。<br>※動画は、AIが内容を読み取れないので、メモ欄に概要を入力してください。';
+    } else {
+      document.getElementById('input-icon').textContent = '📋';
+      document.getElementById('input-title-label').textContent = '予定・プリントを送る';
+      document.getElementById('video-input-group').style.display = 'none';
+      document.getElementById('file-input-note').innerHTML =
+        '※画像・PDF・Word・Excel・PowerPointを選択可';
+      document.getElementById('memo-input-note').innerHTML =
+        '※画像・PDF・Word・Excel・PowerPointは内容を自動で読み取ります。メモ・説明を追加するとより正確になります。';
+    }
+    showScreen('input');
+  }
+
+  let currentPeriod = 'week';
+  let allSchedules = [];
+  
+  async function showSchedule(period) {
+    currentPeriod = period;
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('tab-' + period).classList.add('active');
+    document.getElementById('schedule-search').value = '';
+    showScreen('schedule');
+    document.getElementById('schedule-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getSchedule', period: period })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      allSchedules = data.schedules;
+      filterSchedule();
+    } catch (err) {
+      document.getElementById('schedule-list').innerHTML =
+        '<div class="schedule-empty">読み込みに失敗しました</div>';
+    }
+  }
+
+  function onFileSelected(input) {
+    const newFiles = Array.from(input.files);
+    const invalidFiles = newFiles.filter(f => f.type.startsWith('video/'));
+    const validFiles = newFiles.filter(f => !f.type.startsWith('video/'));
+    if (invalidFiles.length > 0) {
+      showToast(`動画ファイル${invalidFiles.length}件は選択できません`, 'info');
+      input.value = '';
+      return;
+    }
+    validFiles.forEach(async file => {
+      let takenAt = null;
+      if (state.kind === 'album' && file.type.startsWith('image/')) {
+        try {
+          const exif = await exifr.parse(file);
+          if (exif && exif.DateTimeOriginal) {
+            const d = new Date(exif.DateTimeOriginal);
+            const yyyy = d.getFullYear();
+            const MM = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            const hh = String(d.getHours()).padStart(2,'0');
+            const mm = String(d.getMinutes()).padStart(2,'0');
+            takenAt = `${yyyy}-${MM}-${dd}_${hh}${mm}`;
+          }
+        } catch (err) {}
+      }    
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        let resolvedMimeType = file.type;
+        if (!resolvedMimeType) {
+          const ext = file.name.split('.').pop().toLowerCase();
+          const mimeMap = {
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xls':  'application/vnd.ms-excel',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc':  'application/msword',
+            'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'ppt':  'application/vnd.ms-powerpoint',
+            'pdf':  'application/pdf'
+          };
+          resolvedMimeType = mimeMap[ext] || '';
+        }
+        state.files.push({
+          fileBase64: e.target.result,
+          fileName: file.name,
+          mimeType: resolvedMimeType,
+          takenAt: takenAt
+        });
+        renderFileList();
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  const MAX_VIDEO_SIZE_MB = 18;
+  
+  function onVideoSelected(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > MAX_VIDEO_SIZE_MB) {
+      showToast(`動画が大きすぎます（${sizeMB.toFixed(1)}MB）
+18MBを超える動画は
+Googleドライブへ直接アップしてください`, 'error', 5000);
+      input.value = '';
+      state.videoFile = null;
+      document.getElementById('video-file-list').innerHTML = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      state.videoFile = {
+        fileBase64: e.target.result,
+        fileName: file.name,
+        mimeType: file.type,
+        takenAt: null
+      };
+      document.getElementById('video-file-list').innerHTML = `
+        <div class="file-item">
+          <span class="file-item-name">🎥 ${file.name}（${sizeMB.toFixed(1)}MB）</span>
+          <button class="file-remove" onclick="removeVideo()">×</button>
+        </div>
+      `;
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+  
+  function removeVideo() {
+    state.videoFile = null;
+    document.getElementById('video-file-list').innerHTML = '';
+    document.getElementById('video-input').value = '';
+  }
+
+  function renderFileList() {
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    state.files.forEach((file, index) => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.innerHTML = `
+        <span class="file-item-name">📄 ${file.fileName}</span>
+        <button class="file-remove" onclick="removeFile(${index})">×</button>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function removeFile(index) {
+    state.files.splice(index, 1);
+    renderFileList();
+  }
+
+  async function submitFiles() {
+    const originalText = document.getElementById('original-text').value;
+    const videoDriveUrl = document.getElementById('video-drive-url').value.trim();
+    if (!originalText && state.files.length === 0 && !state.videoFile && !videoDriveUrl) {
+      showToast('テキストかファイルのどちらかを入力してください', 'info');
+      return;
+    }
+    const allFiles = [...state.files];
+    if (state.videoFile) allFiles.push(state.videoFile);
+    showScreen('loading');
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'submit',
+          userId: state.userId,
+          kind: state.kind,
+          originalText: originalText,
+          files: allFiles,
+          videoDriveUrl: videoDriveUrl || null
+        })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      document.getElementById('complete-count').textContent = data.count + '件を受け付けました';
+      showScreen('complete');
+    } catch (err) {
+      showToast('送信に失敗しました', 'error');
+      showScreen('input');
+    }
+  }
+
+  function openEdit(s, period) {
+    state.editId = s.id;
+    state.editPeriod = period;
+    document.getElementById('edit-title').value = s.title || '';
+    document.getElementById('edit-content').value = s.content || '';
+    document.getElementById('edit-assignee').value = s.assignee || '';
+    document.getElementById('edit-scheduled-date').value = s.scheduledDate || '';
+    document.getElementById('edit-retention').value = s.retentionDate || '';
+    showScreen('edit');
+  }
+
+  async function saveEdit() {
+    showProcessing();
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'updateSchedule',
+          id: state.editId,
+          title: document.getElementById('edit-title').value,
+          content: document.getElementById('edit-content').value,
+          assignee: document.getElementById('edit-assignee').value,
+          scheduledDate: document.getElementById('edit-scheduled-date').value,
+          retentionDate: document.getElementById('edit-retention').value
+        })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      hideProcessing();
+      showToast('保存しました！');
+      showSchedule(state.editPeriod);
+    } catch (err) {
+      hideProcessing();
+      showToast('保存に失敗しました', 'error');
+    }
+  }
+
+  async function deleteSchedule() {
+    if (!confirm('この予定を削除しますか？')) return;
+    showProcessing();
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteSchedule', id: state.editId })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      hideProcessing();
+      showToast('削除しました！');
+      showSchedule(state.editPeriod);
+    } catch (err) {
+      hideProcessing();
+      showToast('削除に失敗しました', 'error');
+    }
+  }
+
+  async function showRecentPosts() {
+    showScreen('log');
+    document.getElementById('log-list').innerHTML = '<div class="schedule-empty">読み込み中...</div>';
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getRecentPosts', limit: LOG_LIMIT })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      const list = document.getElementById('log-list');
+      if (data.posts.length === 0) {
+        list.innerHTML = '<div class="schedule-empty">投稿はありません</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.posts.forEach(p => {
+        const icon = p.kind === 'album' ? '📷' : '📅';
+        const isError = p.status && String(p.status).startsWith('error');
+        const item = document.createElement('div');
+        item.className = 'schedule-item';
+        item.innerHTML = `
+          <div class="schedule-date">${p.postedAt} ${p.userName}</div>
+          <div class="schedule-title" style="${isError ? 'color:#e53935;' : ''}">
+            ${isError ? '⚠️ 送信に失敗しました。もう一度お試しください。' : icon + '「' + p.title + '」を送信'}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    } catch (err) {
+      document.getElementById('log-list').innerHTML =
+        '<div class="schedule-empty">読み込みに失敗しました</div>';
+    }
+  }
+
+  let albumOffset = 0;
+  let albumLoading = false;
+  let albumHasMore = true;
+  
+  async function showAlbum() {
+    albumOffset = 0;
+    albumLoading = false;
+    albumHasMore = true;
+    showScreen('album');
+    // スケルトンローディング表示
+    const skeletons = Array(9).fill(0).map(() =>
+      `<div style="aspect-ratio:1; background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size:200% 100%; border-radius:6px; animation:skeleton 1.2s infinite;"> 	
+</div>`
+    ).join('');
+    document.getElementById('photo-grid').innerHTML = skeletons;
+    document.getElementById('album-folder-link').href = 
+      `https://drive.google.com/drive/folders/${DRIVE_ALBUM_FOLDER_ID}`;
+    await loadMorePhotos();
+  }
+
+  async function loadMorePhotos() {
+    if (albumLoading || !albumHasMore) return;
+    albumLoading = true;
+    if (albumOffset === 0) {
+      popupPhotos = []; // 最初の読み込み時にリセット（スケルトンはそのまま残す）
+    }
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getAlbum', limit: 40, offset: albumOffset })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      const grid = document.getElementById('photo-grid');
+      if (albumOffset === 0 && data.photos.length === 0) {
+        grid.innerHTML = '<div class="schedule-empty">写真はありません</div>';
+        albumHasMore = false;
+        return;
+      }
+
+      // 最初の読み込み時はスケルトンをクリア
+      if (albumOffset === 0) {
+        grid.innerHTML = '';
+      }
+      data.photos.forEach(p => {
+        const index = popupPhotos.length; // 追加前のlengthがこの写真のindex
+        popupPhotos.push(p);
+
+        const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] || 
+                       p.fileUrl.match(/id=([^&]+)/)?.[1];
+        const thumbnailUrl = fileId 
+          ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w200` : null;
+        const item = document.createElement('div');
+        item.className = 'photo-item';
+        item.innerHTML = `
+          <img src="${thumbnailUrl}" alt="${p.title}" loading="lazy"
+            onerror="this.style.display='none';this.parentElement.querySelector('.no-thumb').style.display='flex';this.parentElement.dataset.noThumb='1';">
+          <div class="no-thumb" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#E3F2FD;">
+            <div style="font-size:24px;">🎥</div>
+            <div style="font-size:9px;color:#1565C0;margin-top:2px;text-align:center;padding:0 4px;">${String(p.title).substring(0,10)}</div>
+          </div>
+          ${p.mimeType && p.mimeType.startsWith('video/') ? `
+          <div style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.5);border-radius:4px;padding:2px 4px;font-size:10px;">🎥</div>
+          ` : ''}
+          <div class="photo-overlay">
+            <div class="photo-overlay-title">${p.title}</div>
+          </div>
+        `;
+        item.onclick = () => openAlbumPopup(p, null, index);
+        grid.appendChild(item);
+      });
+      albumOffset += data.photos.length;
+      albumHasMore = albumOffset < data.total;
+    } catch (err) {
+      if (albumOffset === 0) {
+        document.getElementById('photo-grid').innerHTML = 
+          '<div class="schedule-empty">読み込みに失敗しました</div>';
+      }
+    } finally {
+      albumLoading = false;
+    }
+  }
+  
+  document.getElementById('screen-album').addEventListener('scroll', () => {
+    const el = document.getElementById('screen-album');
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) {
+      loadMorePhotos();
+    }
+  });
+
+  // ===========================
+  // アルバムポップアップ（前へ・次へ・スワイプ対応）
+  // ===========================
+  let currentPopupIndex = 0;
+  let popupPhotos = []; // 表示中のアルバム写真リスト
+
+  function openAlbumPopup(p, thumbnailUrlLarge, index) {
+    // indexが渡された場合はそれを使う、なければphotosから探す
+    if (index !== undefined) {
+      currentPopupIndex = index;
+    } else {
+      currentPopupIndex = popupPhotos.findIndex(ph => ph.fileUrl === p.fileUrl);
+      if (currentPopupIndex === -1) currentPopupIndex = 0;
+    }
+    renderPopup();
+    document.getElementById('album-popup-overlay').style.display = 'flex';
+  }
+
+  function renderPopup() {
+    const p = popupPhotos[currentPopupIndex];
+    if (!p) return;
+
+    const fileId = p.fileUrl.match(/\/d\/([^/]+)/)?.[1] ||
+                   p.fileUrl.match(/id=([^&]+)/)?.[1];
+    const thumbnailUrlLarge = fileId
+      ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w800` : null;
+
+    const imgEl = document.getElementById('album-popup-img');
+    if (thumbnailUrlLarge) {
+      imgEl.src = thumbnailUrlLarge;
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
+    document.getElementById('album-popup-title').textContent = p.title || '';
+    document.getElementById('album-popup-content').textContent = p.content || '';
+    document.getElementById('album-popup-link').href = p.fileUrl || '#';
+    document.getElementById('album-popup-counter').textContent =
+      `${currentPopupIndex + 1} / ${popupPhotos.length}`;
+  }
+
+  function moveAlbumPopup(dir) {
+    const next = currentPopupIndex + dir;
+    if (next < 0 || next >= popupPhotos.length) return;
+    currentPopupIndex = next;
+    renderPopup();
+  }
+
+  function closeAlbumPopup(event) {
+    if (!event || event.target === document.getElementById('album-popup-overlay')) {
+      document.getElementById('album-popup-overlay').style.display = 'none';
+    }
+  }
+
+  // スワイプ検知
+  let swipeTouchStartX = 0;
+  document.getElementById('album-popup-overlay').addEventListener('touchstart', e => {
+    swipeTouchStartX = e.touches[0].clientX;
+  });
+  document.getElementById('album-popup-overlay').addEventListener('touchend', e => {
+    const diff = swipeTouchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { // 50px以上のスワイプで反応
+      moveAlbumPopup(diff > 0 ? 1 : -1);
+    }
+  });
+
+  async function deleteAlbumPhoto() {
+    if (!confirm('この写真をアルバムから削除しますか？')) return;
+    const p = popupPhotos[currentPopupIndex];
+    if (!p) return;
+    showProcessing();
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deleteAlbum', fileUrl: p.fileUrl })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      hideProcessing();
+      showToast('削除しました！');
+      document.getElementById('album-popup-overlay').style.display = 'none';
+      showAlbum(); // アルバムを再読み込み
+    } catch (err) {
+      hideProcessing();
+      showToast('削除に失敗しました', 'error');
+    }
+  }
+
+  function filterSchedule() {
+    const keyword = document.getElementById('schedule-search').value.trim().toLowerCase();
+    const list = document.getElementById('schedule-list');
+    const filtered = keyword
+      ? allSchedules.filter(s =>
+          (s.title || '').toLowerCase().includes(keyword) ||
+          (s.content || '').toLowerCase().includes(keyword) ||
+          (s.assignee || '').toLowerCase().includes(keyword)
+        )
+      : allSchedules;
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="schedule-empty">該当する予定はありません</div>';
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(s => {
+      let dateStr = '';
+      if (s.scheduledDate) {
+        const date = new Date(s.scheduledDate);
+        if (!isNaN(date.getTime())) {
+          const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+          dateStr = `${date.getMonth() + 1}/${date.getDate()}(${weekdays[date.getDay()]})`;
+        }
+      }
+      const item = document.createElement('div');
+      item.className = 'schedule-item';
+      item.style.cursor = 'pointer';
+      item.onclick = () => openEdit(s, currentPeriod);
+      item.innerHTML = `
+        ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
+        <div class="schedule-title">${s.title}</div>
+        ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
+        ${s.fileUrl ? `<div class="schedule-link"> 	
+<a href="${s.fileUrl}" target="_blank">📎 添付</a> 	
+</div>` : ''}
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  initLiff();
+</script>
+</body>
+</html>
