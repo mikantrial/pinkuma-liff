@@ -429,6 +429,9 @@
 	  font-weight: bold;
 	  color: #333;
 	}
+	/* ソートアイコン */
+	#pc-record-table th:hover { background: #f0f0f0; }
+	.sort-icon { font-size: 10px; color: #4CAF50; }
   </style>
 </head>
 <body>
@@ -621,6 +624,15 @@
       <input type="text" id="pc-filter-keyword" placeholder="🔍 キーワード検索"
         oninput="filterRecordsPC()">
     </div>
+	<div class="filter-row">
+	  <select id="filter-sort" onchange="filterRecords()">
+	    <option value="registeredDate_desc">登録日（新しい順）</option>
+	    <option value="registeredDate_asc">登録日（古い順）</option>
+	    <option value="title_asc">タイトル（昇順）</option>
+	    <option value="title_desc">タイトル（降順）</option>
+	    <option value="status_asc">ステータス順</option>
+	  </select>
+	</div>
   </div>
   <div style="display:flex; justify-content:flex-end; padding:4px 8px;">
     <span id="pc-total-count" style="font-size:12px; color:#888;"></span>
@@ -628,14 +640,14 @@
   <div style="overflow-x:auto;">
     <table id="pc-record-table" style="width:100%; border-collapse:collapse; font-size:13px;">
       <thead>
-        <tr style="background:#f8f8f8;">
-          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">登録日</th>
-          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee;">タイトル</th>
-          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">カテゴリ</th>
-          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">登録者</th>
-          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">担当者</th>
-          <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">ステータス</th>
-        </tr>
+		<tr style="background:#f8f8f8;">
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap; cursor:pointer;" onclick="sortPC('registeredDate')">登録日 <span id="sort-icon-registeredDate"></span></th>
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; cursor:pointer;" onclick="sortPC('title')">タイトル <span id="sort-icon-title"></span></th>
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">カテゴリ</th>
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap; cursor:pointer;" onclick="sortPC('registrantName')">登録者 <span id="sort-icon-registrantName"></span></th>
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">担当者</th>
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap; cursor:pointer;" onclick="sortPC('status')">ステータス <span id="sort-icon-status"></span></th>
+		</tr>
       </thead>
       <tbody id="pc-record-tbody">
         <tr><td colspan="6" class="schedule-empty">読み込み中...</td></tr>
@@ -1301,13 +1313,25 @@
       return true;
     });
 
+	const sortVal = document.getElementById('filter-sort').value;
+    const [sortKey, sortDir] = sortVal.split('_');
+    const sorted = [...filtered].sort((a, b) => {
+      let valA = a[sortKey] || '';
+      let valB = b[sortKey] || '';
+      const dir = sortDir === 'asc' ? 1 : -1;
+      if (sortKey === 'registeredDate') {
+        return (new Date(valA) - new Date(valB)) * dir;
+      }
+      return valA.localeCompare(valB, 'ja') * dir;
+    });
+
     const list = document.getElementById('record-list');
-    if (filtered.length === 0) {
+    if (sorted.length === 0) {
       list.innerHTML = '<div class="empty-msg">該当する記録はありません</div>';
       return;
     }
     list.innerHTML = '';
-    filtered.forEach(r => {
+    sorted.forEach(r => {
       const item = document.createElement('div');
       item.className = 'record-item';
       item.onclick = () => showDetail(r.id);
@@ -1375,6 +1399,47 @@
     filterRecordsPC();
   }
 
+	// ===========================
+	// PC用一覧ソート
+	// ===========================
+	let pcSortKey = 'registeredDate';
+	let pcSortDir = 'desc';
+	
+	function sortPC(key) {
+	  if (pcSortKey === key) {
+	    pcSortDir = pcSortDir === 'desc' ? 'asc' : 'desc';
+	  } else {
+	    pcSortKey = key;
+	    pcSortDir = key === 'registeredDate' ? 'desc' : 'asc';
+	  }
+	  updateSortIcons();
+	  filterRecordsPC();
+	}
+	
+	function updateSortIcons() {
+	  ['registeredDate', 'title', 'registrantName', 'status'].forEach(key => {
+	    const el = document.getElementById('sort-icon-' + key);
+	    if (!el) return;
+	    if (key === pcSortKey) {
+	      el.textContent = pcSortDir === 'desc' ? ' ▼' : ' ▲';
+	    } else {
+	      el.textContent = '';
+	    }
+	  });
+	}
+	
+	function applySortPC(records) {
+	  return [...records].sort((a, b) => {
+	    let valA = a[pcSortKey] || '';
+	    let valB = b[pcSortKey] || '';
+	    const dir = pcSortDir === 'asc' ? 1 : -1;
+	    if (pcSortKey === 'registeredDate') {
+	      return (new Date(valA) - new Date(valB)) * dir;
+	    }
+	    return valA.localeCompare(valB, 'ja') * dir;
+	  });
+	}
+
   function filterRecordsPC() {
     const largeCat  = document.getElementById('pc-filter-large-cat').value;
     const smallCat  = document.getElementById('pc-filter-small-cat').value;
@@ -1402,6 +1467,7 @@
       return true;
     });
 
+	const sorted = applySortPC(filtered);
     const tbody = document.getElementById('pc-record-tbody');
     document.getElementById('pc-total-count').textContent = `${filtered.length}件`;
 
@@ -1411,7 +1477,7 @@
     }
 
     tbody.innerHTML = '';
-    filtered.forEach(r => {
+    sorted.forEach(r => {
       const tr = document.createElement('tr');
       const statusClass = 'status-' + (r.status || '');
       tr.innerHTML = `
