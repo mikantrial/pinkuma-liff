@@ -591,8 +591,9 @@
       <input type="text" id="filter-keyword" placeholder="🔍 キーワード検索"
         oninput="filterRecords()">
     </div>
-	<div class="filter-row">
-	  <select id="filter-sort" onchange="filterRecords()">
+	<div class="filter-row" style="align-items:center;">
+	  <span style="font-size:13px; color:#555; white-space:nowrap;">並び順：</span>
+	  <select id="filter-sort" onchange="filterRecords()" style="flex:none; width:auto;">
 	    <option value="registeredDate_desc">登録日（新しい順）</option>
 	    <option value="registeredDate_asc">登録日（古い順）</option>
 	    <option value="title_asc">タイトル（昇順）</option>
