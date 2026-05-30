@@ -9,8 +9,10 @@
   <meta property="og:image" content="https://mikantrial.github.io/ai-product/pinkuma-liff/pinkuma_ogp.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"> 	
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"> 	
+</script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -460,8 +462,10 @@
 <!-- TOP画面 -->
 <div id="screen-top" class="screen active">
   <div class="top-header">
-    <h1 id="top-title"></h1>
-    <p id="top-tagline"></p>
+    <h1 id="top-title"> 	
+</h1>
+    <p id="top-tagline"> 	
+</p>
   </div>
 
   <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -525,8 +529,10 @@
 <!-- 入力画面 -->
 <div id="screen-input" class="screen">
   <div class="screen-title">
-    <span id="input-icon"></span>
-    <span id="input-title-label"></span>
+    <span id="input-icon"> 	
+</span>
+    <span id="input-title-label"> 	
+</span>
   </div>
   <div class="form-group" style="margin-bottom:16px">
     <label>ファイル添付（複数選択可）</label>
@@ -534,8 +540,9 @@
     <input type="file" id="file-input" 
       accept="image/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/msword"
       multiple onchange="onFileSelected(this)">
-    <div class="file-list" id="file-list"></div>
-    <div style="font-size:11px; color:#888; margin-top:0;">
+    <div class="file-list" id="file-list"> 	
+</div>
+    <div id="file-input-note" style="font-size:11px; color:#888; margin-top:0;">
       ※画像・PDF・Word・Excel・PowerPointを選択可
     </div>    
   </div>
@@ -544,7 +551,8 @@
     <label class="file-btn" for="video-input">🎥 動画を選ぶ</label>
     <input type="file" id="video-input" accept="video/*"
       onchange="onVideoSelected(this)">
-    <div id="video-file-list"></div>
+    <div id="video-file-list"> 	
+</div>
     <div style="font-size:11px; color:#888; margin-top:0;">
       ※18MBを超える動画は
       <a id="video-drive-link" href="#" target="_blank" style="color:#4CAF50;">Googleドライブ</a>
@@ -559,8 +567,9 @@
   </div>
   <div class="form-group" style="margin-bottom:16px">
     <label>メモ・説明（任意）</label>
-    <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"></textarea>
-    <div style="font-size:11px; color:#888; margin-top:0;">
+    <textarea id="original-text" placeholder="例）運動会の写真、明日の歯医者 16:00〜 持ち物：保険証"> 	
+</textarea>
+    <div id="memo-input-note" style="font-size:11px; color:#888; margin-top:0;">
       ※画像・PDF・Word・Excel・PowerPointは内容を自動で読み取ります。メモ・説明を追加するとより正確になります。<br>
       ※動画はメモ欄に概要を入力してください。
     </div>
@@ -581,11 +590,14 @@
 <!-- 完了画面 -->
 <div id="screen-complete" class="screen">
   <div class="complete-wrap">
-    <div class="icon" id="complete-icon"></div>
-    <div class="text" id="complete-text"></div>
+    <div class="icon" id="complete-icon"> 	
+</div>
+    <div class="text" id="complete-text"> 	
+</div>
     <div class="sub">順番に整理するね</div>
     <div style="margin-top:12px; padding:10px 16px; background:#FFF8E1; border-radius:8px; font-size:13px; color:#F57F17;">⏰ 整理が完了するまで数分かかります</div>
-    <div class="count" id="complete-count"></div>
+    <div class="count" id="complete-count"> 	
+</div>
   </div>
 </div>
 
@@ -626,7 +638,8 @@
   </div>
   <div class="edit-field">
     <label>AI解析内容</label>
-    <textarea id="edit-content" rows="3"></textarea>
+    <textarea id="edit-content" rows="3"> 	
+</textarea>
   </div>
   <div class="edit-field">
     <label>担当者</label>
@@ -656,12 +669,14 @@
 </div>
 
 <!-- トースト通知 -->
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast"> 	
+</div>
 
 <!-- 処理中オーバーレイ -->
 <div id="processing-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:400; flex-direction:column; align-items:center; justify-content:center;">
   <div style="background:white; border-radius:12px; padding:28px 36px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
-    <div style="width:36px; height:36px; border:4px solid #eee; border-top-color:#4CAF50; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px;"></div>
+    <div style="width:36px; height:36px; border:4px solid #eee; border-top-color:#4CAF50; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px;"> 	
+</div>
     <div style="font-size:14px; font-weight:bold; color:#333;">処理中...</div>
   </div>
 </div>
@@ -675,11 +690,14 @@
       <button onclick="moveAlbumPopup(-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
       <button onclick="moveAlbumPopup(1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;border-radius:50%;width:36px;height:36px;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
       <!-- 枚数表示 -->
-      <div id="album-popup-counter" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.4);color:white;font-size:11px;padding:2px 8px;border-radius:10px;"></div>
+      <div id="album-popup-counter" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.4);color:white;font-size:11px;padding:2px 8px;border-radius:10px;"> 	
+</div>
     </div>
     <div class="album-popup-body">
-      <div id="album-popup-title" class="album-popup-title"></div>
-      <div id="album-popup-content" class="album-popup-content"></div>
+      <div id="album-popup-title" class="album-popup-title"> 	
+</div>
+      <div id="album-popup-content" class="album-popup-content"> 	
+</div>
       <a id="album-popup-link" class="btn-more" target="_blank">📁 ドライブで元の写真を開く</a>
       <button class="album-popup-close" onclick="closeAlbumPopup()">× 閉じる</button>
       <button class="btn-danger" style="margin-top:4px;" onclick="deleteAlbumPhoto()">🗑️ この写真を削除する</button>
@@ -692,8 +710,10 @@
   <div class="screen-title">❓ 使い方</div>
 
   <div class="schedule-item" style="margin-bottom:8px;">
-    <div class="schedule-title" id="howto-talk-title"></div>
-    <div class="schedule-content" id="howto-talk-content" style="margin-top:6px;"></div>
+    <div class="schedule-title" id="howto-talk-title"> 	
+</div>
+    <div class="schedule-content" id="howto-talk-content" style="margin-top:6px;"> 	
+</div>
   </div>
 
   <div class="schedule-item" style="margin-bottom:8px;">
@@ -705,7 +725,8 @@
       🎥 動画：18MB以下のみ（1個のみ）。18MB超はGoogleドライブから直接アップ。<br>
       <br>
       画像・PDF・Word・Excel・PowerPointはAIが内容を自動で読み取りタイトルと説明文を作成します。<br>
-      動画はメモ欄に概要を入力してください。<br><br>
+      動画はメモ欄に概要を入力してください。<br> 	
+<br>
       思い出アルバムの画像は、撮影日時または投稿日時に応じて、Googleドライブの年月フォルダへ整理されます。
     </div>
   </div>
@@ -852,10 +873,18 @@
       document.getElementById('input-icon').textContent = '📷';
       document.getElementById('input-title-label').textContent = '思い出写真を送る';
       document.getElementById('video-input-group').style.display = 'block';
+      document.getElementById('file-input-note').innerHTML =
+        '※画像を選択可';
+      document.getElementById('memo-input-note').innerHTML =
+        '※画像はAIが内容を自動で読み取りタイトルと説明文を作成します。メモ・説明を追加するとより正確になります。<br>※動画はメモ欄に概要を入力してください。';
     } else {
       document.getElementById('input-icon').textContent = '📋';
       document.getElementById('input-title-label').textContent = '予定・プリントを送る';
       document.getElementById('video-input-group').style.display = 'none';
+      document.getElementById('file-input-note').innerHTML =
+        '※画像・PDF・Word・Excel・PowerPointを選択可';
+      document.getElementById('memo-input-note').innerHTML =
+        '※画像・PDF・Word・Excel・PowerPointは内容を自動で読み取ります。メモ・説明を追加するとより正確になります。';
     }
     showScreen('input');
   }
@@ -1132,7 +1161,8 @@ Googleドライブへ直接アップしてください`, 'error', 5000);
     showScreen('album');
     // スケルトンローディング表示
     const skeletons = Array(9).fill(0).map(() =>
-      `<div style="aspect-ratio:1; background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size:200% 100%; border-radius:6px; animation:skeleton 1.2s infinite;"></div>`
+      `<div style="aspect-ratio:1; background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size:200% 100%; border-radius:6px; animation:skeleton 1.2s infinite;"> 	
+</div>`
     ).join('');
     document.getElementById('photo-grid').innerHTML = skeletons;
     document.getElementById('album-folder-link').href = 
@@ -1330,7 +1360,9 @@ Googleドライブへ直接アップしてください`, 'error', 5000);
         ${dateStr ? `<div class="schedule-date">${dateStr} ${s.assignee ? '👤 ' + s.assignee : ''}</div>` : ''}
         <div class="schedule-title">${s.title}</div>
         ${s.content ? `<div class="schedule-content">${s.content}</div>` : ''}
-        ${s.fileUrl ? `<div class="schedule-link"><a href="${s.fileUrl}" target="_blank">📎 添付</a></div>` : ''}
+        ${s.fileUrl ? `<div class="schedule-link"> 	
+<a href="${s.fileUrl}" target="_blank">📎 添付</a> 	
+</div>` : ''}
       `;
       list.appendChild(item);
     });
