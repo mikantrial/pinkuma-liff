@@ -481,11 +481,11 @@
 
   <div class="form-group">
     <label>タイトル（必須）</label>
-    <input type="text" id="input-title" placeholder="例）外壁点検 北側">
+    <input type="text" id="input-title" placeholder="タイトルを入力">
   </div>
   <div class="form-group">
     <label>メモ（任意）</label>
-    <textarea id="input-memo" placeholder="詳細を入力してください"></textarea>
+    <textarea id="input-memo" placeholder="メモを入力"></textarea>
   </div>
   <div class="form-group">
     <label>登録日</label>
@@ -499,7 +499,7 @@
 		<option value="">候補から選ぶ</option>
 		</select>
 		<span style="color:#aaa; font-size:18px;">→</span>
-		<input type="text" id="input-registrant-text" placeholder="登録者名（必須）"
+		<input type="text" id="input-registrant-text" placeholder="登録者名を入力"
 		style="flex:1;">
 	</div>
 	<div style="font-size:11px; color:#999;">
@@ -509,15 +509,25 @@
   </div>
   <div class="form-group">
     <label>担当者1（任意）</label>
-    <select id="input-assignee1">
-      <option value="">なし</option>
-    </select>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+      <select id="input-assignee1-select" onchange="onInputAssigneeSelectChange('input-assignee1-select','input-assignee1-text')"
+        style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:white;">
+        <option value="">候補から選ぶ</option>
+      </select>
+      <span style="color:#aaa; font-size:18px;">→</span>
+      <input type="text" id="input-assignee1-text" placeholder="担当者名を入力" style="flex:1;">
+    </div>
   </div>
   <div class="form-group">
     <label>担当者2（任意）</label>
-    <select id="input-assignee2">
-      <option value="">なし</option>
-    </select>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+      <select id="input-assignee2-select" onchange="onInputAssigneeSelectChange('input-assignee2-select','input-assignee2-text')"
+        style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:white;">
+        <option value="">候補から選ぶ</option>
+      </select>
+      <span style="color:#aaa; font-size:18px;">→</span>
+      <input type="text" id="input-assignee2-text" placeholder="担当者名を入力" style="flex:1;">
+    </div>
   </div>
   <div class="form-group">
     <label>大カテゴリ</label>
@@ -685,7 +695,7 @@
 			  <option value="">候補から選ぶ</option>
 			</select>
 			<span style="color:#aaa; font-size:18px;">→</span>
-			<input type="text" id="detail-registrant-text" placeholder="登録者名"
+			<input type="text" id="detail-registrant-text" placeholder="登録者名を入力"
 			  style="flex:1;">
 		  </div>
 	  </div>
@@ -697,7 +707,7 @@
 		      <option value="">候補から選ぶ</option>
 		    </select>
 		    <span style="color:#aaa; font-size:18px;">→</span>
-		    <input type="text" id="detail-assignee1-text" placeholder="担当者1"
+		    <input type="text" id="detail-assignee1-text" placeholder="担当者名を入力"
 		      style="flex:1;">
 		  </div>
 	  </div>
@@ -709,7 +719,7 @@
 			  <option value="">候補から選ぶ</option>
 			</select>
 			<span style="color:#aaa; font-size:18px;">→</span>
-			<input type="text" id="detail-assignee2-text" placeholder="担当者2（なしの場合は空欄）"
+			<input type="text" id="detail-assignee2-text" placeholder="担当者名を入力"
 			  style="flex:1;">
 		</div>
 	  </div>
@@ -779,7 +789,7 @@
   <div class="screen-title">⚙️ 設定</div>
   <div class="edit-field">
     <label>登録者名（あなたの名前）</label>
-    <input type="text" id="settings-name" placeholder="名前を入力してください">
+    <input type="text" id="settings-name" placeholder="名前を入力">
   </div>
   <button class="btn-submit" onclick="saveSettings()">💾 保存する</button>
 </div>
@@ -1006,8 +1016,10 @@
 
     // ユーザー選択肢をセット
     buildUserOptions('input-registrant-select', '');
-    buildUserOptions('input-assignee1', '');
-    buildUserOptions('input-assignee2', '');
+    // buildUserOptions('input-assignee1', '');
+    // buildUserOptions('input-assignee2', '');
+	buildUserOptions('input-assignee1-select', '');
+	buildUserOptions('input-assignee2-select', '');	  
     buildUserOptions('filter-registrant', '');
     buildUserOptions('filter-assignee', '');
 
@@ -1125,13 +1137,21 @@
 	}
   }
 
-	function onDetailUserSelectChange(selectId, textId) {
+  function onInputAssigneeSelectChange(selectId, textId) {
+	  const sel = document.getElementById(selectId);
+	  if (sel.value) {
+	    document.getElementById(textId).value = sel.value;
+	    sel.value = '';
+	  }
+  }
+
+  function onDetailUserSelectChange(selectId, textId) {
 	  const sel = document.getElementById(selectId);
 	  if (sel.value) {
 		document.getElementById(textId).value = sel.value;
 		sel.value = '';
 	  }
-	}
+  }
 
   // ===========================
   // ステータス選択肢の構築
@@ -1272,8 +1292,10 @@
           memo: document.getElementById('input-memo').value,
           largeCat: largeCat,
           smallCat: smallCat,
-          assignee1: document.getElementById('input-assignee1').value,
-          assignee2: document.getElementById('input-assignee2').value,
+          // assignee1: document.getElementById('input-assignee1').value,
+          // assignee2: document.getElementById('input-assignee2').value,
+          assignee1: document.getElementById('input-assignee1-text').value,
+          assignee2: document.getElementById('input-assignee2-text').value,			
           files: state.files
         })
       });
