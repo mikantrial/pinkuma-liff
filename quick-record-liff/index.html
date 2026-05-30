@@ -757,7 +757,8 @@
 	      <div class="file-list" id="detail-add-file-list"></div>
 	    </div>
 	  </div>
-	
+	  
+	  <button class="btn-submit" style="background:#1565C0;" onclick="duplicateRecord()">📋 複製して新規登録</button>
 	  <button class="btn-submit" onclick="saveDetail()">💾 保存する</button>
 	  <button class="btn-danger" onclick="deleteRecord()">🗑️ 削除する</button>
 	  <p class="back-link" onclick="state.previousScreen === 'records-pc' ? showRecordsPC() : showRecords()">← 一覧に戻る</p>
@@ -1611,6 +1612,47 @@
     }
   }
 
+	// ===========================
+	// 記録を複製して新規登録
+	// ===========================
+	function duplicateRecord() {
+	  const title    = document.getElementById('detail-title').value;
+	  const memo     = document.getElementById('detail-memo').value;
+	  const largeCat = document.getElementById('detail-large-cat').value;
+	  const smallCat = document.getElementById('detail-small-cat').value;
+	  const assignee1 = document.getElementById('detail-assignee1-text').value;
+	  const assignee2 = document.getElementById('detail-assignee2-text').value;
+	  const registrant = document.getElementById('detail-registrant-text').value;
+	
+	  // 入力画面に値をセット
+	  document.getElementById('input-title').value = title;
+	  document.getElementById('input-memo').value = memo;
+	  document.getElementById('input-registrant-text').value = registrant;
+	  document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
+	
+	  // カテゴリをセット
+	  if (largeCat) {
+	    document.getElementById('input-large-cat').value = largeCat;
+	    onLargeCatChange();
+	    if (smallCat) {
+	      document.getElementById('input-small-cat').value = smallCat;
+	    }
+	  }
+	
+	  // 担当者をセット
+	  document.getElementById('input-assignee1').value = assignee1;
+	  document.getElementById('input-assignee2').value = assignee2;
+	
+	  // ファイルはリセット
+	  state.files = [];
+	  document.getElementById('input-file-list').innerHTML = '';
+	
+	  showScreen('input');
+	}
+
+  // ===========================
+　// 編集内容を保存する
+  // ===========================
   async function saveDetail() {
     const btn = document.querySelector('#screen-detail .btn-submit');
     btn.disabled = true;
