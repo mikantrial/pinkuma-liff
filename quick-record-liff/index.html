@@ -653,7 +653,7 @@
       <thead>
 		<tr style="background:#f8f8f8;">
 		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap; cursor:pointer;" onclick="sortPC('registeredDate')">登録日 <span id="sort-icon-registeredDate"></span></th>
-		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; cursor:pointer;" onclick="sortPC('title')">タイトル <span id="sort-icon-title"></span></th>
+		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; cursor:pointer; min-width:120px; max-width:200px;" onclick="sortPC('title')">タイトル <span id="sort-icon-title"></span></th>
 		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">カテゴリ</th>
 		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap; cursor:pointer;" onclick="sortPC('registrantName')">登録者 <span id="sort-icon-registrantName"></span></th>
 		  <th style="padding:10px 12px; text-align:left; color:#666; border-bottom:1px solid #eee; white-space:nowrap;">担当者</th>
@@ -814,6 +814,7 @@
     <div class="record-memo" style="margin-top:6px;">
       登録した記録の一覧を表示します。<br><br>
       カテゴリ・ステータス・登録者・担当者・キーワードで絞り込みができます。<br><br>
+      🔍 キーワード検索は「タイトル」と「メモ」が対象です。<br><br>
       記録をタップすると詳細・編集画面が開きます。タイトル・メモ・担当者・ステータス・カテゴリの変更やファイルの追加・削除ができます。<br><br>
       📋 複製して新規登録ボタンで、既存の記録を元に新しい記録を登録できます。
     </div>
@@ -1540,7 +1541,7 @@
       const statusClass = 'status-' + (r.status || '');
       tr.innerHTML = `
         <td style="white-space:nowrap;">${r.registeredDate || ''}</td>
-        <td style="font-weight:bold;">${r.title || ''}</td>
+        <td style="font-weight:bold; min-width:120px; max-width:200px; word-break:break-all;">${r.title || ''}</td>
         <td style="white-space:nowrap; font-size:12px; color:#888;">${r.largeCat || ''} > ${r.smallCat || ''}</td>
         <td>${r.registrantName || ''}</td>
         <td>${[r.assignee1, r.assignee2].filter(Boolean).join('・') || ''}</td>
