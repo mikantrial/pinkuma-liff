@@ -887,29 +887,49 @@
   // ===========================
   // 初期化
   // ===========================
-  async function initLiff() {
-    try {
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-      const profile = await liff.getProfile();
-      state.userId = profile.userId;
-    } catch (err) {
-      state.userId = 'unknown';
-    }
-
-    // 登録者名の初期設定
-    initRegistrantName();
-
-    // 設定（カテゴリ・ユーザー一覧）を取得
-    await loadConfig();
-
-    // 登録日のデフォルトを今日に
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('input-date').value = today;
-  }
+	async function initLiff() {
+	  try {
+	    await liff.init({ liffId: LIFF_ID });
+	    if (!liff.isLoggedIn()) {
+	      liff.login();
+	      return;
+	    }
+	    const profile = await liff.getProfile();
+	    state.userId = profile.userId;
+	  } catch (err) {
+	    state.userId = 'unknown';
+	  }
+	
+	  // 登録者名の初期設定
+	  initRegistrantName();
+	
+	  // 設定（カテゴリ・ユーザー一覧）を取得
+	  await loadConfig();
+	
+	  // 登録日のデフォルトを今日に
+	  const today = new Date().toISOString().split('T')[0];
+	  document.getElementById('input-date').value = today;
+	
+	  // URLパラメータがあれば入力画面を自動で開く
+	  const params = new URLSearchParams(window.location.search);
+	  const qrTitle    = params.get('title');
+	  const qrLargeCat = params.get('largeCat');
+	  const qrSmallCat = params.get('smallCat');
+	  const qrMemo     = params.get('memo');
+	
+	  if (qrTitle || qrLargeCat) {
+	    if (qrTitle)    document.getElementById('input-title').value = qrTitle;
+	    if (qrMemo)     document.getElementById('input-memo').value = qrMemo;
+	    if (qrLargeCat) {
+	      document.getElementById('input-large-cat').value = qrLargeCat;
+	      onLargeCatChange();
+	    }
+	    if (qrSmallCat) {
+	      document.getElementById('input-small-cat').value = qrSmallCat;
+	    }
+	    showInputScreen();
+	  }
+	}
 
   function initRegistrantName() {
     const saved = localStorage.getItem('registrantName');
