@@ -1610,13 +1610,27 @@
       // ファイル一覧
       const fileDiv = document.getElementById('detail-files');
       if (data.files.length === 0) {
-        fileDiv.innerHTML = '<div class="empty-msg" style="padding:8px;">添付ファイルなし</div>';
+          fileDiv.innerHTML = '<div class="empty-msg" style="padding:8px;">添付ファイルなし</div>';
       } else {
-        fileDiv.innerHTML = '';
-        data.files.forEach(f => {
+          fileDiv.innerHTML = '';
+          data.files.forEach(f => {
           const card = document.createElement('div');
           card.className = 'file-card';
+
+          // ファイルIDをURLから取得
+          const fileIdMatch = f.fileUrl.match(/\/d\/([^/]+)/) || f.fileUrl.match(/id=([^&]+)/);
+          const fileId = fileIdMatch ? fileIdMatch[1] : null;
+
+          // 画像の場合はサムネイル表示
+          const isImage = f.mimeType && f.mimeType.startsWith('image/');
+          const thumbnailHtml = isImage && fileId
+            ? `<img src="https://drive.google.com/thumbnail?id=${fileId}&sz=w400"
+                style="width:100%; border-radius:6px; margin-bottom:8px; display:block;"
+                onerror="this.style.display='none'">`
+            : '';
+
           card.innerHTML = `
+            ${thumbnailHtml}
             <div class="file-card-name">📄 ${f.fileName}</div>
             <div class="file-card-summary">${f.aiSummary || '（解析中）'}</div>
             <div class="file-card-actions">
